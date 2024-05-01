@@ -1,0 +1,62 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test_linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: generate code
+        run: |
+          javac csorma_generator.java  && java csorma_generator ./project/
+
+      - name: compile binary
+        run: |
+          cd project/gen/
+          ls -al
+          make -j 6 asan_all
+
+      - name: check binary
+        run: |
+          cd project/gen/
+          ls -al
+          ldd csorma_test
+          ls -al csorma_test
+          ls -hal csorma_test
+
+      - name: run test
+        run: |
+          cd project/gen/
+          ./csorma_test
+
+  test__macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: generate code
+        run: |
+          javac csorma_generator.java  && java csorma_generator ./project/
+
+      - name: compile binary
+        run: |
+          cd project/gen/
+          ls -al
+          make -j 6 all
+
+      - name: check binary
+        run: |
+          cd project/gen/
+          ls -al
+          ldd csorma_test
+          ls -al csorma_test
+          ls -hal csorma_test
+
+      - name: run test
+        run: |
+          cd project/gen/
+          ./csorma_test
