@@ -68,7 +68,7 @@ jobs:
         run: |
           cd project/gen/
           ls -al
-          ldd csorma_test
+          otool csorma_test || echo "NO ERR"
           ls -al csorma_test
           ls -hal csorma_test
 
