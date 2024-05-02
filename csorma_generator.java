@@ -343,9 +343,23 @@ public class csorma_generator {
 
         System.out.println("P: " + column_name + " type: " + p5.name);
 
-        tbl_columns_for_struct_01 += "    " + p5.ctype + " "  + column_name + ";\n";
-
         append_to_sql(workdir, table_name, "  \""+column_name+"\" "+primary_key_column_sqlitetype+",");
+
+        if (!primary_key_column_autoincr_if_needed)
+        {
+            column_num++;
+            add_col_inserters(table_name, column_name, p5, p5.ctype, column_num);
+            add_col_inserter_bind(table_name, column_name, p5, p5.ctype, column_num);
+        }
+
+        add_col_setters_func(table_name, column_name, p5, p5.ctype);
+        add_equal_func02(table_name, column_name, p5, p5.ctype);
+        add_set_func02(table_name, column_name, p5, p5.ctype);
+        add_equal_func03(table_name, column_name, p5, p5.ctype);
+        add_set_func03(table_name, column_name, p5, p5.ctype);
+        add_free_func01(table_name, column_name, p5, p5.ctype);
+
+        tbl_columns_for_struct_01 += "    " + p5.ctype + " "  + column_name + ";\n";
 
         add_equal_func(table_name, column_name, p5, p5.ctype);
         add_orderby_func(table_name, column_name, p5, p5.ctype);
@@ -365,17 +379,16 @@ public class csorma_generator {
         append_to_sql(workdir, table_name, "  \""+column_name+"\" "+c5.sqlitetype+",");
 
         column_num++;
-        String comma = "";
-        if (column_num > 1) {comma = ",";}
 
-        add_col_setters_func(table_name, column_name, c5, c5.ctype, column_num);
         add_col_inserters(table_name, column_name, c5, c5.ctype, column_num);
         add_col_inserter_bind(table_name, column_name, c5, c5.ctype, column_num);
-        add_equal_func02(table_name, column_name, c5, c5.ctype, column_num);
-        add_set_func02(table_name, column_name, c5, c5.ctype, column_num);
-        add_equal_func03(table_name, column_name, c5, c5.ctype, column_num);
-        add_set_func03(table_name, column_name, c5, c5.ctype, column_num);
-        add_free_func01(table_name, column_name, c5, c5.ctype, column_num);
+
+        add_col_setters_func(table_name, column_name, c5, c5.ctype);
+        add_equal_func02(table_name, column_name, c5, c5.ctype);
+        add_set_func02(table_name, column_name, c5, c5.ctype);
+        add_equal_func03(table_name, column_name, c5, c5.ctype);
+        add_set_func03(table_name, column_name, c5, c5.ctype);
+        add_free_func01(table_name, column_name, c5, c5.ctype);
 
         tbl_columns_for_struct_01 += "    " + c5.ctype + " "  + column_name + ";\n";
 
@@ -403,7 +416,7 @@ public class csorma_generator {
     }
 
     static void add_free_func01(final String table_name, final String column_name, final COLTYPE ctype,
-                final String ctype_firstupper, final int column_num)
+                final String ctype_firstupper)
     {
         if (ctype == COLTYPE.STRING)
         {
@@ -470,7 +483,7 @@ public class csorma_generator {
         }
     }
 
-    static void add_col_setters_func(final String table_name, final String column_name, final COLTYPE ctype, final String ctype_firstupper, final int column_num)
+    static void add_col_setters_func(final String table_name, final String column_name, final COLTYPE ctype, final String ctype_firstupper)
     {
         if ((ctype == COLTYPE.INT)||(ctype == COLTYPE.LONG))
         {
@@ -627,7 +640,7 @@ public class csorma_generator {
     }
 
     static void add_set_func02(final String table_name, final String column_name,
-            final COLTYPE ctype, final String ctype_firstupper, final int column_num)
+            final COLTYPE ctype, final String ctype_firstupper)
     {
 
 String _f = """
@@ -675,7 +688,7 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Set(__@@@TABLE@@@__* t, __@@@CTYPE
     }
 
     static void add_set_func03(final String table_name, final String column_name,
-            final COLTYPE ctype, final String ctype_firstupper, final int column_num)
+            final COLTYPE ctype, final String ctype_firstupper)
     {
         if ((ctype == COLTYPE.INT)||(ctype == COLTYPE.LONG))
         {
@@ -703,7 +716,7 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Set(__@@@TABLE@@@__* t, __@@@CTYPE
     }
 
     static void add_equal_func03(final String table_name, final String column_name,
-            final COLTYPE ctype, final String ctype_firstupper, final int column_num)
+            final COLTYPE ctype, final String ctype_firstupper)
     {
         if ((ctype == COLTYPE.INT)||(ctype == COLTYPE.LONG))
         {
@@ -731,7 +744,7 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Set(__@@@TABLE@@@__* t, __@@@CTYPE
     }
 
     static void add_equal_func02(final String table_name, final String column_name,
-            final COLTYPE ctype, final String ctype_firstupper, final int column_num)
+            final COLTYPE ctype, final String ctype_firstupper)
     {
 
 String _f = """
