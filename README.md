@@ -21,7 +21,7 @@ https://github.com/zoff99/sorma2
 * no dependencies (other than SQLite3 amalagamtion soure file)
 * works with ASAN
 
-### What is does NOT
+### What is does NOT do
 * NOT optimized for speed
 * NOT optimized for small memory footprint
 * NO complex DB operations like JOIN or UNION etc.
