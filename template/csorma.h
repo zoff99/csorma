@@ -111,11 +111,11 @@ void bind_all_where_bindvars(sqlite3_stmt *stmt, const OrmaBindvars *bind_where_
 void bind_to_set_sql_int(csorma_s *sql_set, OrmaBindvars *bind_set_vars, const char *static_text,
                         int64_t value_int_any, const BINDVAR_TYPE bt);
 void bind_to_set_sql_string(csorma_s *sql_set, OrmaBindvars *bind_set_vars, const char *static_text,
-                        csorma_s *value_str);
+                        csorma_s *value_str, const BINDVAR_TYPE bt);
 void bind_to_where_sql_int(csorma_s *sql_where, OrmaBindvars *bind_where_vars, const char *static_text,
                         int64_t value_int_any, const BINDVAR_TYPE bt);
 void bind_to_where_sql_string(csorma_s *sql_where, OrmaBindvars *bind_where_vars, const char *static_text,
-                        csorma_s *value_str);
+                        csorma_s *value_str, const BINDVAR_TYPE bt);
 
 OrmaDatabase* OrmaDatabase_init(const uint8_t *directory_name, const uint32_t directory_name_len, 
                                 const uint8_t *file_name, const uint32_t file_name_len);
