@@ -5,11 +5,18 @@
 # csorma - C Simple ORM (Android?)
 #
 ###################################################
-CC = gcc
-AR = ar
+
+ismingw = 0
+ccmachine = $(shell $(CC) -dumpmachine)
+ifeq ($(findstring mingw, $(ccmachine)), mingw)
+  ismingw = 1
+  CFLAGS += --static
+endif
+
+
 ASANCFLAGS = -fsanitize=address -fno-omit-frame-pointer -static-libasan
-CFLAGS = -g -O3 -fPIC -Isqlite/ -I./
-LIBSSQLITE3 = -lpthread -ldl -lm
+CFLAGS += -g -O3 -fPIC -pthread -Isqlite/ -I./
+LIBSSQLITE3 = -ldl -lm
 
 # ------------------------------
 #  tests
