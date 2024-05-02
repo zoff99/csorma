@@ -718,28 +718,24 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Set(__@@@TABLE@@@__* t, __@@@CTYPE
     static void add_equal_func03(final String table_name, final String column_name,
             final COLTYPE ctype, final String ctype_firstupper)
     {
-        if ((ctype == COLTYPE.INT)||(ctype == COLTYPE.LONG))
+        String[] list = new String[]{"Eq","NotEq","Lt","Le","Gt","Ge"};
+        for (String cmp_str : list)
         {
-            tbl_equalfuncs_3  += "    " + table_name + "* (*_FuncPtr0020_" + lc(column_name) +
-                ") (" + table_name + "*, const " + ctype.ctype + ");\n";
-            tbl_equalfuncs_3  += "    " + "_FuncPtr0020_" + lc(column_name) + " = &_" + lc(column_name) + "Eq;" + "\n";
-            tbl_equalfuncs_3  += "    " + "t->" + lc(column_name) + "Eq = _FuncPtr0020_" + lc(column_name)  + ";\n";
+            if ((ctype == COLTYPE.INT)||(ctype == COLTYPE.LONG)||(ctype == COLTYPE.BOOLEAN))
+            {
+                tbl_equalfuncs_3  += "    " + table_name + "* (*_FuncPtr0020_"+cmp_str+"" + lc(column_name) +
+                    ") (" + table_name + "*, const " + ctype.ctype + ");\n";
+                tbl_equalfuncs_3  += "    " + "_FuncPtr0020_"+cmp_str+"" + lc(column_name) + " = &_" + lc(column_name) + ""+cmp_str+";" + "\n";
+                tbl_equalfuncs_3  += "    " + "t->" + lc(column_name) + ""+cmp_str+" = _FuncPtr0020_"+cmp_str+"" + lc(column_name)  + ";\n";
+            }
+            else if (ctype == COLTYPE.STRING)
+            {
+                tbl_equalfuncs_3  += "    " + table_name + "* (*_FuncPtr0020_"+cmp_str+"" + lc(column_name) +
+                    ") (" + table_name + "*, " + ctype.ctype + ");\n";
+                tbl_equalfuncs_3  += "    " + "_FuncPtr0020_"+cmp_str+"" + lc(column_name) + " = &_" + lc(column_name) + ""+cmp_str+";" + "\n";
+                tbl_equalfuncs_3  += "    " + "t->" + lc(column_name) + ""+cmp_str+" = _FuncPtr0020_"+cmp_str+"" + lc(column_name)  + ";\n";
+            }
         }
-        else if (ctype == COLTYPE.BOOLEAN)
-        {
-            tbl_equalfuncs_3  += "    " + table_name + "* (*_FuncPtr0020_" + lc(column_name) +
-                ") (" + table_name + "*, const " + ctype.ctype + ");\n";
-            tbl_equalfuncs_3  += "    " + "_FuncPtr0020_" + lc(column_name) + " = &_" + lc(column_name) + "Eq;" + "\n";
-            tbl_equalfuncs_3  += "    " + "t->" + lc(column_name) + "Eq = _FuncPtr0020_" + lc(column_name)  + ";\n";
-        }
-        else if (ctype == COLTYPE.STRING)
-        {
-            tbl_equalfuncs_3  += "    " + table_name + "* (*_FuncPtr0020_" + lc(column_name) +
-                ") (" + table_name + "*, " + ctype.ctype + ");\n";
-            tbl_equalfuncs_3  += "    " + "_FuncPtr0020_" + lc(column_name) + " = &_" + lc(column_name) + "Eq;" + "\n";
-            tbl_equalfuncs_3  += "    " + "t->" + lc(column_name) + "Eq = _FuncPtr0020_" + lc(column_name)  + ";\n";
-        }
-
         tbl_equalfuncs_3  += "    " + "// ------------" + "\n";
     }
 
@@ -747,7 +743,7 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Set(__@@@TABLE@@@__* t, __@@@CTYPE
             final COLTYPE ctype, final String ctype_firstupper)
     {
 
-String _f = """
+String _f_eq = """
 static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Eq(__@@@TABLE@@@__ *t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
 {
     bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__=?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__);
@@ -755,30 +751,87 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Eq(__@@@TABLE@@@__ *t, __@@@CTYPE_
 }
 """;
 
-        tbl_equalfuncs_2  += r_(_f, table_name, column_name, ctype);
-        tbl_equalfuncs_2  += "" + "\n";
+String _f_neq = """
+static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__NotEq(__@@@TABLE@@@__ *t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
+{
+    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__<>?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__);
+    return t;
+}
+""";
+
+String _f_lt = """
+static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Lt(__@@@TABLE@@@__ *t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
+{
+    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__<?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__);
+    return t;
+}
+""";
+
+String _f_le = """
+static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Le(__@@@TABLE@@@__ *t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
+{
+    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__<=?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__);
+    return t;
+}
+""";
+
+String _f_gt = """
+static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Gt(__@@@TABLE@@@__ *t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
+{
+    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__>?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__);
+    return t;
+}
+""";
+
+String _f_ge = """
+static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Ge(__@@@TABLE@@@__ *t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
+{
+    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__>=?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__);
+    return t;
+}
+""";
+
+        tbl_equalfuncs_2  += r_(_f_eq, table_name, column_name, ctype);
+        tbl_equalfuncs_2  += r_(_f_neq, table_name, column_name, ctype);
+        tbl_equalfuncs_2  += r_(_f_lt, table_name, column_name, ctype);
+        tbl_equalfuncs_2  += r_(_f_le, table_name, column_name, ctype);
+        tbl_equalfuncs_2  += r_(_f_gt, table_name, column_name, ctype);
+        tbl_equalfuncs_2  += r_(_f_ge, table_name, column_name, ctype);
     }
 
     static void add_equal_func(final String table_name, final String column_name, final COLTYPE ctype, final String ctype_firstupper)
     {
 
-        if ((ctype == COLTYPE.INT)||(ctype == COLTYPE.LONG))
+        if ((ctype == COLTYPE.INT)||(ctype == COLTYPE.LONG)||(ctype == COLTYPE.BOOLEAN))
         {
             tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Eq)(" + table_name + " *t, const " +
-                ctype.ctype + " " + lc(column_name) + ");";
-        }
-        else if (ctype == COLTYPE.BOOLEAN)
-        {
-            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Eq)(" + table_name + " *t, const " +
-                ctype.ctype + " " + lc(column_name) + ");";
+                ctype.ctype + " " + lc(column_name) + ");" + "\n";
+            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "NotEq)(" + table_name + " *t, const " +
+                ctype.ctype + " " + lc(column_name) + ");" + "\n";
+            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Lt)(" + table_name + " *t, const " +
+                ctype.ctype + " " + lc(column_name) + ");" + "\n";
+            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Le)(" + table_name + " *t, const " +
+                ctype.ctype + " " + lc(column_name) + ");" + "\n";
+            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Gt)(" + table_name + " *t, const " +
+                ctype.ctype + " " + lc(column_name) + ");" + "\n";
+            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Ge)(" + table_name + " *t, const " +
+                ctype.ctype + " " + lc(column_name) + ");" + "\n";
         }
         else if (ctype == COLTYPE.STRING)
         {
             tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Eq)(" + table_name + " *t, " +
-                ctype.ctype + " " + lc(column_name) + ");";
+                ctype.ctype + " " + lc(column_name) + ");" + "\n";
+            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "NotEq)(" + table_name + " *t, " +
+                ctype.ctype + " " + lc(column_name) + ");" + "\n";
+            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Lt)(" + table_name + " *t, " +
+                ctype.ctype + " " + lc(column_name) + ");" + "\n";
+            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Le)(" + table_name + " *t, " +
+                ctype.ctype + " " + lc(column_name) + ");" + "\n";
+            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Gt)(" + table_name + " *t, " +
+                ctype.ctype + " " + lc(column_name) + ");" + "\n";
+            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Ge)(" + table_name + " *t, " +
+                ctype.ctype + " " + lc(column_name) + ");" + "\n";
         }
-
-        tbl_equalfuncs  += "" + "\n";
     }
 
     static String remove_public(final String in)
