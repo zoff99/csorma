@@ -45,7 +45,7 @@ static void read_file_to_buf1()
     long numbytes = ftell(f);
     fseek(f, 0L, SEEK_SET);
     char *buf = (char*)calloc(numbytes, sizeof(char));
-    fread(buf, sizeof(char), numbytes, f);
+    size_t fr1 = fread(buf, sizeof(char), numbytes, f);
     fclose(f);
     fc.bytes = numbytes;
     fc.buf = buf;
@@ -59,7 +59,7 @@ static void read_file_to_buf2()
     long numbytes = ftell(f);
     fseek(f, 0L, SEEK_SET);
     char *buf = (char*)calloc(numbytes, sizeof(char));
-    fread(buf, sizeof(char), numbytes, f);
+    size_t fr1 = fread(buf, sizeof(char), numbytes, f);
     fclose(f);
     fc.bytes = numbytes;
     fc.buf = buf;
