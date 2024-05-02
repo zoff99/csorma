@@ -136,9 +136,9 @@ jobs:
         run: |
           cd project/gen/
           ls -al
-          file csorma_test
-          ls -al csorma_test
-          ls -hal csorma_test
+          file csorma_test.exe
+          ls -al csorma_test.exe
+          ls -hal csorma_test.exe
 
       - name: debug
         run: |
@@ -152,4 +152,4 @@ jobs:
       - name: run test
         run: |
           cd project/gen/
-          wine ./csorma_test
+          wine ./csorma_test.exe
