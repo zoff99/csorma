@@ -36,6 +36,15 @@ jobs:
           ls -al csorma_test
           ls -hal csorma_test
 
+      - name: debug
+        run: |
+          cd project/gen/
+          echo "==============="
+          cat -n Message.h
+          echo "==============="
+          cat -n Message.c
+          echo "==============="
+
       - name: run test
         run: |
           cd project/gen/
