@@ -74,6 +74,7 @@ public class csorma_generator {
         private String ctype;
         private String sqlitetype;
         private String csqlitetype;
+        private String bcsqlitetype;
         private COLTYPE(int value)
         {
             this.value = value;
@@ -91,6 +92,12 @@ public class csorma_generator {
             if (value == 2) { this.csqlitetype = "Long"; };
             if (value == 3) { this.csqlitetype = "String"; };
             if (value == 4) { this.csqlitetype = "Boolean"; };
+            if (value == 999) { this.csqlitetype = "String"; };
+            if (value == 1) { this.bcsqlitetype = "int"; };
+            if (value == 2) { this.bcsqlitetype = "int"; };
+            if (value == 3) { this.bcsqlitetype = "string"; };
+            if (value == 4) { this.bcsqlitetype = "int"; };
+            if (value == 999) { this.bcsqlitetype = "string"; };
             if (value == 1) { this.sqlitetype = "INTEGER"; };
             if (value == 2) { this.sqlitetype = "INTEGER"; };
             if (value == 3) { this.sqlitetype = "TEXT"; };
@@ -370,6 +377,24 @@ public class csorma_generator {
         add_set_func(table_name, column_name, c5, c5.ctype);
     }
 
+    static String r_(final String in, final String tablename, final String column_name, COLTYPE ctype)
+    {
+        String _const_ = "const";
+        if (ctype == COLTYPE.STRING)
+        {
+            _const_ = "";
+        }
+        return in.replace("__@@@TABLE@@@__", tablename)
+                .replace("__@@@TABLEuc@@@__", tablename.toUpperCase())
+                .replace("__@@@TABLElc@@@__", tablename.toLowerCase())
+                .replace("__@@@COLUMN_NAME@@@__", column_name.toLowerCase())
+                .replace("__@@@CTYPE_CTYPE@@@__", ctype.ctype)
+                .replace("__@@@CTYPE_CSTYPE@@@__", ctype.csqlitetype)
+                .replace("__@@@CTYPE_BCSTYPE@@@__", ctype.bcsqlitetype)
+                .replace("__@@@CTYPE_CONST_CTYPE@@@__", _const_)
+                ;
+    }
+
     static void add_free_func01(final String table_name, final String column_name, final COLTYPE ctype,
                 final String ctype_firstupper, final int column_num)
     {
@@ -597,84 +622,23 @@ public class csorma_generator {
     static void add_set_func02(final String table_name, final String column_name,
             final COLTYPE ctype, final String ctype_firstupper, final int column_num)
     {
-        if ((ctype == COLTYPE.INT)||(ctype == COLTYPE.LONG))
-        {
-            tbl_setfuncs_2  += "" + "static " + table_name + " *_" + lc(column_name) + "Set(" + table_name +
-                "* t, const " + ctype.ctype + " " + lc(column_name) + ")";
-            tbl_setfuncs_2  += "" + "\n";
-            tbl_setfuncs_2  += "" + "{";
-            tbl_setfuncs_2  += "" + "\n";
-            tbl_setfuncs_2  += "    " + "if (t->sql_set->l == 0)" + "\n";
 
-            tbl_setfuncs_2  += "    " + "{" + "\n";
+String _f = """
+static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Set(__@@@TABLE@@@__* t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
+{
+    if (t->sql_set->l == 0)
+    {
+        bind_to_set_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_set, t->bind_set_vars, " set __@@@COLUMN_NAME@@@__=?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__);
+    }
+    else
+    {
+        bind_to_set_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_set, t->bind_set_vars, " , __@@@COLUMN_NAME@@@__=?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__);
+    }
+    return t;
+}
+""";
 
-            tbl_setfuncs_2  += "        " + "bind_to_set_sql_int(t->sql_set, t->bind_set_vars, \" set " +
-                lc(column_name) + "=?\", " + lc(column_name) + ", BINDVAR_TYPE_" + ctype.csqlitetype + ");\n";
-
-            tbl_setfuncs_2  += "    " + "}" + "\n";
-            tbl_setfuncs_2  += "    " + "else" + "\n";
-            tbl_setfuncs_2  += "    " + "{" + "\n";
-
-            tbl_setfuncs_2  += "        " + "bind_to_set_sql_int(t->sql_set, t->bind_set_vars, \" , " +
-                lc(column_name) + "=?\", " + lc(column_name) + ", BINDVAR_TYPE_" + ctype.csqlitetype + ");\n";
-
-            tbl_setfuncs_2  += "    " + "}" + "\n";
-            tbl_setfuncs_2  += "    " + "return t;" + "\n";
-            tbl_setfuncs_2  += "" + "}";
-        }
-        else if (ctype == COLTYPE.BOOLEAN)
-        {
-            tbl_setfuncs_2  += "" + "static " + table_name + " *_" + lc(column_name) + "Set(" + table_name +
-                "* t, const " + ctype.ctype + " " + lc(column_name) + ")";
-            tbl_setfuncs_2  += "" + "\n";
-            tbl_setfuncs_2  += "" + "{";
-            tbl_setfuncs_2  += "" + "\n";
-            tbl_setfuncs_2  += "    " + "if (t->sql_set->l == 0)" + "\n";
-
-            tbl_setfuncs_2  += "    " + "{" + "\n";
-
-            tbl_setfuncs_2  += "        " + "bind_to_set_sql_int(t->sql_set, t->bind_set_vars, \" set " +
-                lc(column_name) + "=?\", " + lc(column_name) + ", BINDVAR_TYPE_" + ctype.csqlitetype + ");\n";
-
-            tbl_setfuncs_2  += "    " + "}" + "\n";
-            tbl_setfuncs_2  += "    " + "else" + "\n";
-            tbl_setfuncs_2  += "    " + "{" + "\n";
-
-            tbl_setfuncs_2  += "        " + "bind_to_set_sql_int(t->sql_set, t->bind_set_vars, \" , " +
-                lc(column_name) + "=?\", " + lc(column_name) + ", BINDVAR_TYPE_" + ctype.csqlitetype + ");\n";
-
-            tbl_setfuncs_2  += "    " + "}" + "\n";
-            tbl_setfuncs_2  += "    " + "return t;" + "\n";
-            tbl_setfuncs_2  += "" + "}";
-        }
-        else if (ctype == COLTYPE.STRING)
-        {
-            tbl_setfuncs_2  += "" + "static " + table_name + " *_" + lc(column_name) + "Set(" + table_name +
-                "* t, " + ctype.ctype + " " + lc(column_name) + ")";
-            tbl_setfuncs_2  += "" + "\n";
-            tbl_setfuncs_2  += "" + "{";
-            tbl_setfuncs_2  += "" + "\n";
-            tbl_setfuncs_2  += "    " + "if (t->sql_set->l == 0)" + "\n";
-
-            tbl_setfuncs_2  += "    " + "{" + "\n";
-
-            tbl_setfuncs_2  += "        " + "bind_to_set_sql_string(t->sql_set, t->bind_set_vars, \" set " +
-                lc(column_name) + "=?\", " + lc(column_name) + ");\n";
-
-            tbl_setfuncs_2  += "    " + "}" + "\n";
-            tbl_setfuncs_2  += "    " + "else" + "\n";
-            tbl_setfuncs_2  += "    " + "{" + "\n";
-
-            tbl_setfuncs_2  += "        " + "bind_to_set_sql_string(t->sql_set, t->bind_set_vars, \" , " +
-                lc(column_name) + "=?\", " + lc(column_name) + ");\n";
-
-            tbl_setfuncs_2  += "    " + "}" + "\n";
-            tbl_setfuncs_2  += "    " + "return t;" + "\n";
-            tbl_setfuncs_2  += "" + "}";
-
-
-        }
-
+        tbl_setfuncs_2  += r_(_f, table_name, column_name, ctype);
         tbl_setfuncs_2  += "" + "\n";
     }
 
@@ -762,51 +726,21 @@ public class csorma_generator {
     static void add_equal_func02(final String table_name, final String column_name,
             final COLTYPE ctype, final String ctype_firstupper, final int column_num)
     {
-        if ((ctype == COLTYPE.INT)||(ctype == COLTYPE.LONG))
-        {
-            tbl_equalfuncs_2  += "" + "static " + table_name + " *_" + lc(column_name) + "Eq(" +
-                table_name + " *t, const " + ctype.ctype + " " + lc(column_name) + ")";
-            tbl_equalfuncs_2  += "" + "\n";
-            tbl_equalfuncs_2  += "{" + "\n";
-            tbl_equalfuncs_2  += "    " + "bind_to_where_sql_int(t->sql_where, t->bind_where_vars, \"and " +
-                lc(column_name) + "=?\", " + lc(column_name) + ", BINDVAR_TYPE_" + ctype.csqlitetype + ");";
-            tbl_equalfuncs_2  += "" + "\n";
-            tbl_equalfuncs_2  += "    " + "return t;\n";
-            tbl_equalfuncs_2  += "}";
-        }
-        else if (ctype == COLTYPE.BOOLEAN)
-        {
-            tbl_equalfuncs_2  += "" + "static " + table_name + " *_" + lc(column_name) + "Eq(" +
-                table_name + " *t, const " + ctype.ctype + " " + lc(column_name) + ")";
-            tbl_equalfuncs_2  += "" + "\n";
-            tbl_equalfuncs_2  += "{" + "\n";
-            tbl_equalfuncs_2  += "    " + "bind_to_where_sql_int(t->sql_where, t->bind_where_vars, \"and " +
-                lc(column_name) + "=?\", " + lc(column_name) + ", BINDVAR_TYPE_" + ctype.csqlitetype + ");";
-            tbl_equalfuncs_2  += "" + "\n";
-            tbl_equalfuncs_2  += "    " + "return t;\n";
-            tbl_equalfuncs_2  += "}";
-        }
-        else if (ctype == COLTYPE.STRING)
-        {
-            tbl_equalfuncs_2  += "" + "static " + table_name + " *_" + lc(column_name) + "Eq(" +
-                table_name + " *t, " + ctype.ctype + " " + lc(column_name) + ")";
-            tbl_equalfuncs_2  += "" + "\n";
-            tbl_equalfuncs_2  += "{" + "\n";
-            tbl_equalfuncs_2  += "    " + "bind_to_where_sql_string(t->sql_where, t->bind_where_vars, \"and " +
-                lc(column_name) + "=?\", " + lc(column_name) + ");";
-            tbl_equalfuncs_2  += "" + "\n";
-            tbl_equalfuncs_2  += "    " + "return t;\n";
-            tbl_equalfuncs_2  += "}";
-        }
 
+String _f = """
+static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Eq(__@@@TABLE@@@__ *t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
+{
+    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__=?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__);
+    return t;
+}
+""";
+
+        tbl_equalfuncs_2  += r_(_f, table_name, column_name, ctype);
         tbl_equalfuncs_2  += "" + "\n";
     }
 
     static void add_equal_func(final String table_name, final String column_name, final COLTYPE ctype, final String ctype_firstupper)
     {
-        // Message* (*message_idEq)(Message *t, const int64_t message_id);
-        // Message* (*readEq)(Message *t, const bool read);
-        // Message* (*textEq)(Message *m, csorma_s *text);
 
         if ((ctype == COLTYPE.INT)||(ctype == COLTYPE.LONG))
         {
