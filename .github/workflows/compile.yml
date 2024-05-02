@@ -130,7 +130,7 @@ jobs:
           cd project/gen/
           ls -al
           export CC=x86_64-w64-mingw32-gcc
-          make -j 6 asan_all
+          make -j 6 all
 
       - name: check binary
         run: |
