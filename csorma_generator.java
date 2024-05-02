@@ -37,7 +37,8 @@ public class csorma_generator {
     static String tbl_tolist = "";
     static int column_num = 0;
     static String primary_key_column_name = "";
-    static String primary_key_column_autoincr_if_needed = "";
+    static boolean primary_key_column_autoincr_if_needed = false;
+    static final String primary_key_column_autoincr_if_needed_str = " AUTOINCREMENT";
     static String primary_key_column_sqlitetype = "";
     static String tbl_insert = "";
     static String tbl_insert_sub01 = "";
@@ -252,7 +253,7 @@ public class csorma_generator {
     {
         String table_name = "";
         primary_key_column_name = "";
-        primary_key_column_autoincr_if_needed = "";
+        primary_key_column_autoincr_if_needed = false;
         primary_key_column_sqlitetype = "";
         BufferedReader reader;
 		try {
@@ -286,13 +287,14 @@ public class csorma_generator {
                 }
                 else if (line.trim().contains("@PrimaryKey"))
                 {
+                    String primary_key_line = line.trim();
                     line = reader.readLine();
                     while(line.trim().startsWith("@"))
                     {
                         line = reader.readLine();
                     }
-                    System.out.println("PrimaryKey: " + line.trim());
-                    primary_key_column_name = process_primary_key(workdir, infilename, table_name, line.trim());
+                    // System.out.println("PrimaryKey: " + line.trim());
+                    primary_key_column_name = process_primary_key(workdir, infilename, table_name, line.trim(), primary_key_line);
                 }
                 else if (line.trim().contains("@Column"))
                 {
@@ -319,22 +321,27 @@ public class csorma_generator {
 
     static String process_primary_key(final String workdir, final String infilename,
                                     final String table_name,
-                                    final String p)
+                                    final String p,
+                                    final String primary_key_line)
     {
         final String p2 = remove_public(p);
         final String p3 = remove_type(p2);
         final String column_name = get_name(p3).toLowerCase();
         final COLTYPE p5 = get_type(p2);
-        System.out.println("P: " + column_name + " type: " + p5.name);
 
-        primary_key_column_autoincr_if_needed = "";
+        primary_key_column_autoincr_if_needed = false;
         primary_key_column_sqlitetype = p5.sqlitetype;
-        if ((p5 == COLTYPE.INT) || (p5 == COLTYPE.LONG))
+        if (p5 == COLTYPE.LONG)
         {
+            // autoincrement = true
+            if (primary_key_line.toLowerCase().contains("autoincrement = true"))
+            {
+                System.out.println("P: "+ "AUTOINCREMENT");
+                primary_key_column_autoincr_if_needed = true;
+            }
         }
-        else
-        {
-        }
+
+        System.out.println("P: " + column_name + " type: " + p5.name);
 
         tbl_columns_for_struct_01 += "    " + p5.ctype + " "  + column_name + ";\n";
 
@@ -596,7 +603,7 @@ public class csorma_generator {
             e.printStackTrace();
         }
 
-        append_to_sql(workdir, tablename, "  PRIMARY KEY(\""+primary_key_column_name+"\" "+primary_key_column_autoincr_if_needed+")");
+        append_to_sql(workdir, tablename, "  PRIMARY KEY(\""+primary_key_column_name+"\""+primary_key_column_autoincr_if_needed_str+")");
         append_to_sql(workdir, tablename, ");");
 
         tbl_runtime_incl_1 = tbl_runtime_incl_1
