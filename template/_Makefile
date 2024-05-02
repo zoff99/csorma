@@ -6,6 +6,7 @@
 #
 ###################################################
 CC = gcc
+AR = ar
 ASANCFLAGS = -fsanitize=address -fno-omit-frame-pointer -static-libasan
 CFLAGS = -g -O3 -fPIC -Isqlite/ -I./
 LIBSSQLITE3 = -lpthread -ldl -lm
@@ -36,10 +37,10 @@ csorma_example.o: csorma_example.c
 #  csorma lib
 # ------------------------------
 csorma.a: csorma.o logger.o __@@@TABLES_O_FILES@@@__
-	ar rcs csorma.a csorma.o logger.o __@@@TABLES_O_FILES@@@__
+	$(AR) rcs csorma.a csorma.o logger.o __@@@TABLES_O_FILES@@@__
 
 sharedlib: csorma.o logger.o __@@@TABLES_O_FILES@@@__
-	gcc -shared -o libcsorma.so csorma.o logger.o __@@@TABLES_O_FILES@@@__
+	$(CC) -shared -o libcsorma.so csorma.o logger.o __@@@TABLES_O_FILES@@@__
 
 csorma.o: csorma.c csorma.h
 	$(CC) -c $(CFLAGS) $(LIBS) $< -o $@
@@ -57,7 +58,7 @@ __@@@TABLES_COMPILE_O_FILES@@@__
 #  SQLITE3
 # ------------------------------
 sqlite3.a: sqlite3.o
-	ar rcs sqlite3.a sqlite3.o
+	$(AR) rcs sqlite3.a sqlite3.o
 
 sqlite3.o: sqlite/sqlite3.c
 	$(CC) -c $(CFLAGS) $(LIBS) $(LIBSSQLITE3) $< -o $@
