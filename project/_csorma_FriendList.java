@@ -60,5 +60,5 @@ public int friendlist_id;
 comments and information go here.
 what ever you want.
 
-the generator will ignore the down here.
+the generator will ignore it down here.
 
