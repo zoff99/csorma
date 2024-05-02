@@ -17,6 +17,8 @@ int thr_2_stop = 0;
 OrmaDatabase *o = NULL;
 char *utf8_test_file_broken1 = "invalid_UTF-8-test.txt";
 char *utf8_test_file2 = "UTF-8-demo.html";
+uint64_t counter1 = 0;
+uint64_t counter2 = 0;
 
 struct file_content {
     long bytes;
@@ -25,7 +27,17 @@ struct file_content {
 
 struct file_content fc;
 
-void usleep_usec(uint64_t usec)
+// gives a counter value that increaes every millisecond
+static uint64_t csorma_current_time_monotonic_default()
+{
+    uint64_t time = 0;
+    struct timespec clock_mono;
+    clock_gettime(CLOCK_MONOTONIC, &clock_mono);
+    time = 1000ULL * clock_mono.tv_sec + (clock_mono.tv_nsec / 1000000ULL);
+    return time;
+}
+
+static void usleep_usec(uint64_t usec)
 {
     struct timespec ts;
     ts.tv_sec = usec / 1000000;
@@ -33,7 +45,7 @@ void usleep_usec(uint64_t usec)
     nanosleep(&ts, NULL);
 }
 
-void yieldcpu(uint32_t ms)
+static void yieldcpu(uint32_t ms)
 {
     usleep_usec(1000 * ms);
 }
@@ -81,6 +93,7 @@ void *thr_1_func(void *data)
         m->text = str2;
         int64_t rowid = orma_insertIntoMessage(m);
         printf("TEST: THR1: rowid: %ld\n", rowid);
+        counter1++;
         orma_free_Message(m);
         // ----------- insert SQL -----------
         // yieldcpu(1);
@@ -102,6 +115,7 @@ void *thr_2_func(void *data)
         m->text = str3;
         int64_t rowid = orma_insertIntoMessage(m);
         printf("TEST: THR2: rowid: %ld\n", rowid);
+        counter2++;
         orma_free_Message(m);
         // ----------- insert SQL -----------
         // yieldcpu(1);
@@ -273,12 +287,21 @@ int main()
         printf("TEST: Thread 2 successfully created\n");
     }
 
+    uint64_t ts1 = csorma_current_time_monotonic_default();
+
     // HINT: let the threads run for a few seconds
     yieldcpu(2 * 1000);
     thr_1_stop = 1;
     pthread_join(thr_1, NULL);
     thr_2_stop = 1;
     pthread_join(thr_2, NULL);
+
+    uint64_t ts2 = csorma_current_time_monotonic_default();
+    float delta_t = ((ts2 - ts1) / 1000);
+    if (delta_t > 0)
+    {
+        printf("inserts/sec = %0.2f\n", ((float)(counter1 + counter2) / delta_t));
+    }
 #endif
 
     // ----------- slect test -----------
