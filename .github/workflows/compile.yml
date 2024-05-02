@@ -41,7 +41,7 @@ jobs:
           cd project/gen/
           ./csorma_test
 
-  test__macos:
+  test_macos:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
