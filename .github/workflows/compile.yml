@@ -68,11 +68,11 @@ jobs:
         run: |
           cd project/gen/
           ls -al
-          otool -L csorma_test || echo "NO ERR"
-          ls -al csorma_test
-          ls -hal csorma_test
+          otool -L csorma_example || echo "NO ERR"
+          ls -al csorma_example
+          ls -hal csorma_example
 
       - name: run test
         run: |
           cd project/gen/
-          ./csorma_test
+          ./csorma_example
