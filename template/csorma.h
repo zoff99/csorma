@@ -25,7 +25,7 @@ static const char csorma_global_version_asan_string[] = "0.99.0-ASAN";
 // ----------- version -----------
 // ----------- version -----------
 
-#define CSORMA_TRACE 0 // to log all SQL statements set this to 1
+#define CSORMA_TRACE 1 // to log all SQL statements set this to 1
 
 #define __SELECT_START "SELECT * FROM "
 #define __SELECT_COUNT_START "SELECT count(*) as count FROM "
@@ -114,9 +114,9 @@ void bind_to_set_sql_int(csorma_s *sql_set, OrmaBindvars *bind_set_vars, const c
 void bind_to_set_sql_string(csorma_s *sql_set, OrmaBindvars *bind_set_vars, const char *static_text,
                         csorma_s *value_str, const BINDVAR_TYPE bt);
 void bind_to_where_sql_int(csorma_s *sql_where, OrmaBindvars *bind_where_vars, const char *static_text,
-                        int64_t value_int_any, const BINDVAR_TYPE bt);
+                        int64_t value_int_any, const BINDVAR_TYPE bt, const char* static_post_text);
 void bind_to_where_sql_string(csorma_s *sql_where, OrmaBindvars *bind_where_vars, const char *static_text,
-                        csorma_s *value_str, const BINDVAR_TYPE bt);
+                        csorma_s *value_str, const BINDVAR_TYPE bt, const char* static_post_text);
 void add_to_orderby_asc_sql(csorma_s *sql_orderby, const char *column_name, const bool asc);
 
 OrmaDatabase* OrmaDatabase_init(const uint8_t *directory_name, const uint32_t directory_name_len, 

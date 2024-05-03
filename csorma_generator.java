@@ -749,7 +749,7 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Set(__@@@TABLE@@@__* t, __@@@CTYPE
     static void add_equal_func03(final String table_name, final String column_name,
             final COLTYPE ctype, final String ctype_firstupper)
     {
-        String[] list = new String[]{"Eq","NotEq","Lt","Le","Gt","Ge"};
+        String[] list = new String[]{"Eq","NotEq","Lt","Le","Gt","Ge","Like","NotLike"};
         for (String cmp_str : list)
         {
             if ((ctype == COLTYPE.INT)||(ctype == COLTYPE.LONG)||(ctype == COLTYPE.BOOLEAN))
@@ -787,7 +787,7 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Set(__@@@TABLE@@@__* t, __@@@CTYPE
 String _f_eq = """
 static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Eq(__@@@TABLE@@@__ *t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
 {
-    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__=?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__);
+    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__=?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__, "");
     return t;
 }
 """;
@@ -795,7 +795,7 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Eq(__@@@TABLE@@@__ *t, __@@@CTYPE_
 String _f_neq = """
 static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__NotEq(__@@@TABLE@@@__ *t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
 {
-    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__<>?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__);
+    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__<>?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__, "");
     return t;
 }
 """;
@@ -803,7 +803,7 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__NotEq(__@@@TABLE@@@__ *t, __@@@CTY
 String _f_lt = """
 static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Lt(__@@@TABLE@@@__ *t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
 {
-    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__<?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__);
+    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__<?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__, "");
     return t;
 }
 """;
@@ -811,7 +811,7 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Lt(__@@@TABLE@@@__ *t, __@@@CTYPE_
 String _f_le = """
 static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Le(__@@@TABLE@@@__ *t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
 {
-    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__<=?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__);
+    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__<=?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__, "");
     return t;
 }
 """;
@@ -819,7 +819,7 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Le(__@@@TABLE@@@__ *t, __@@@CTYPE_
 String _f_gt = """
 static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Gt(__@@@TABLE@@@__ *t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
 {
-    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__>?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__);
+    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__>?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__, "");
     return t;
 }
 """;
@@ -827,7 +827,23 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Gt(__@@@TABLE@@@__ *t, __@@@CTYPE_
 String _f_ge = """
 static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Ge(__@@@TABLE@@@__ *t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
 {
-    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__>=?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__);
+    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__>=?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__, "");
+    return t;
+}
+""";
+
+String _f_like = """
+static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Like(__@@@TABLE@@@__ *t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
+{
+    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__ LIKE ?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__, (const char*)" ESCAPE '\\\\' ");
+    return t;
+}
+""";
+
+String _f_notlike = """
+static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__NotLike(__@@@TABLE@@@__ *t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
+{
+    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__ NOT LIKE ?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__, (const char*)" ESCAPE '\\\\' ");
     return t;
 }
 """;
@@ -854,6 +870,8 @@ static __@@@TABLE@@@__ *_orderBy__@@@COLUMN_NAME@@@__Desc(__@@@TABLE@@@__ *t)
         tbl_equalfuncs_2  += r_(_f_le, table_name, column_name, ctype);
         tbl_equalfuncs_2  += r_(_f_gt, table_name, column_name, ctype);
         tbl_equalfuncs_2  += r_(_f_ge, table_name, column_name, ctype);
+        tbl_equalfuncs_2  += r_(_f_like, table_name, column_name, ctype);
+        tbl_equalfuncs_2  += r_(_f_notlike, table_name, column_name, ctype);
         tbl_equalfuncs_2  += r_(_f_orderbyasc, table_name, column_name, ctype);
         tbl_equalfuncs_2  += r_(_f_orderbydesc, table_name, column_name, ctype);
     }
@@ -875,6 +893,10 @@ static __@@@TABLE@@@__ *_orderBy__@@@COLUMN_NAME@@@__Desc(__@@@TABLE@@@__ *t)
                 ctype.ctype + " " + lc(column_name) + ");" + "\n";
             tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Ge)(" + table_name + " *t, const " +
                 ctype.ctype + " " + lc(column_name) + ");" + "\n";
+            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Like)(" + table_name + " *t, const " +
+                ctype.ctype + " " + lc(column_name) + ");" + "\n";
+            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "NotLike)(" + table_name + " *t, const " +
+                ctype.ctype + " " + lc(column_name) + ");" + "\n";
         }
         else if (ctype == COLTYPE.STRING)
         {
@@ -889,6 +911,10 @@ static __@@@TABLE@@@__ *_orderBy__@@@COLUMN_NAME@@@__Desc(__@@@TABLE@@@__ *t)
             tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Gt)(" + table_name + " *t, " +
                 ctype.ctype + " " + lc(column_name) + ");" + "\n";
             tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Ge)(" + table_name + " *t, " +
+                ctype.ctype + " " + lc(column_name) + ");" + "\n";
+            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Like)(" + table_name + " *t, " +
+                ctype.ctype + " " + lc(column_name) + ");" + "\n";
+            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "NotLike)(" + table_name + " *t, " +
                 ctype.ctype + " " + lc(column_name) + ");" + "\n";
         }
 

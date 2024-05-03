@@ -428,11 +428,12 @@ void add_to_orderby_asc_sql(csorma_s *sql_orderby, const char *column_name, cons
 }
 
 void bind_to_where_sql_int(csorma_s *sql_where, OrmaBindvars *bind_where_vars, const char *static_text,
-                        int64_t value_int_any, const BINDVAR_TYPE bt)
+                        int64_t value_int_any, const BINDVAR_TYPE bt, const char* static_post_text)
 {
     sql_where = csorma_str_con(sql_where, static_text, strlen(static_text));
     sql_where = csorma_str_int32t(sql_where, __BINDVAR_OFFSET_WHERE + bind_where_vars->items);
     sql_where = csorma_str_con_space(sql_where);
+    sql_where = csorma_str_con(sql_where, static_post_text, strlen(static_post_text));
     if (bt == BINDVAR_TYPE_Long)
     {
         bind_where_vars = bindvar_add_n(bind_where_vars, value_int_any, BINDVAR_TYPE_Long);
@@ -448,11 +449,12 @@ void bind_to_where_sql_int(csorma_s *sql_where, OrmaBindvars *bind_where_vars, c
 }
 
 void bind_to_where_sql_string(csorma_s *sql_where, OrmaBindvars *bind_where_vars, const char *static_text,
-                        csorma_s *value_str, const BINDVAR_TYPE bt)
+                        csorma_s *value_str, const BINDVAR_TYPE bt, const char* static_post_text)
 {
     sql_where = csorma_str_con(sql_where, static_text, strlen(static_text));
     sql_where = csorma_str_int32t(sql_where, __BINDVAR_OFFSET_WHERE + bind_where_vars->items);
     sql_where = csorma_str_con_space(sql_where);
+    sql_where = csorma_str_con(sql_where, static_post_text, strlen(static_post_text));
     bind_where_vars = bindvar_add_s(bind_where_vars, value_str);
 }
 
