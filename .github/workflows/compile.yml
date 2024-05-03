@@ -103,7 +103,57 @@ jobs:
         run: |
           cd project/gen/
           ./csorma_test && ./csorma_example
+  test_macos14arm:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v3
 
+      - name: install deps
+        run:  brew install gdb
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: java-version
+        run: java -version
+
+      - name: generate code
+        run: |
+          javac csorma_generator.java  && java csorma_generator ./project/
+
+      - name: compile binary
+        run: |
+          cd project/gen/
+          ls -al
+          export CFLAGS="-fsanitize=address -fno-omit-frame-pointer"
+          make -j 6 all
+
+      - name: check binary
+        run: |
+          cd project/gen/
+          ls -al
+          otool -L csorma_example || echo "NO ERR"
+          ls -al csorma_example
+          ls -hal csorma_example
+          otool -L csorma_test || echo "NO ERR"
+          ls -al csorma_test
+          ls -hal csorma_test
+
+      - name: debug
+        run: |
+          cd project/gen/
+          echo "==============="
+          cat -n Message.h
+          echo "==============="
+          cat -n Message.c
+          echo "==============="
+
+      - name: run test
+        run: |
+          cd project/gen/
+          ./csorma_test && ./csorma_example
   test_wine:
     runs-on: ubuntu-22.04
     steps:
