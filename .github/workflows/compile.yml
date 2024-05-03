@@ -57,6 +57,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: install deps
+        run:  brew install gdb
+
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -95,7 +98,7 @@ jobs:
       - name: run test
         run: |
           cd project/gen/
-          ./csorma_example
+          gdb -ex=r ./csorma_example
 
   test_wine:
     runs-on: ubuntu-22.04
