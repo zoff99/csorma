@@ -98,8 +98,8 @@ jobs:
       - name: run test
         run: |
           cd project/gen/
-          # gdb -ex=r ./csorma_example
-          ./csorma_example
+          # ./csorma_example
+          sudo gdb -ex=r ./csorma_example
 
   test_wine:
     runs-on: ubuntu-22.04
