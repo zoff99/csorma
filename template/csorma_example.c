@@ -185,7 +185,10 @@ char *sql2 = "CREATE TABLE IF NOT EXISTS \"Friendlist\" ("
     printf("TEST: count m: %d\n", (int)m99->readEq(m99, true)->count(m99));
     // ----------- count(*) SQL -----------
 
-
+    // ----------- count(*) SQL -----------
+    m99 = orma_selectFromMessage(o->db);
+    printf("TEST: count m: %d\n", (int)m99->readEq(m99, true)->tox_friendpubkeyLike(m99, csb("11f03"))->count(m99));
+    // ----------- count(*) SQL -----------
 
     // ----------- count(*) SQL -----------
     m99 = orma_selectFromMessage(o->db);
