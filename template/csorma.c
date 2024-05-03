@@ -401,6 +401,32 @@ void bind_to_set_sql_string(csorma_s *sql_set, OrmaBindvars *bind_set_vars, cons
     bind_set_vars = bindvar_add_s(bind_set_vars, value_str);
 }
 
+void add_to_orderby_asc_sql(csorma_s *sql_orderby, const char *column_name, const bool asc)
+{
+    if ((sql_orderby == NULL) || (sql_orderby->l == 0))
+    {
+        const char* st1 = " order by ";
+        sql_orderby = csorma_str_con(sql_orderby, st1, strlen(st1));
+    }
+    else
+    {
+        const char* st2 = " , ";
+        sql_orderby = csorma_str_con(sql_orderby, st2, strlen(st2));
+    }
+    sql_orderby = csorma_str_con(sql_orderby, column_name, strlen(column_name));
+    sql_orderby = csorma_str_con_space(sql_orderby);
+    if (asc)
+    {
+        const char* st3 = " ASC ";
+        sql_orderby = csorma_str_con(sql_orderby, st3, strlen(st3));
+    }
+    else
+    {
+        const char* st4 = " DESC ";
+        sql_orderby = csorma_str_con(sql_orderby, st4, strlen(st4));
+    }
+}
+
 void bind_to_where_sql_int(csorma_s *sql_where, OrmaBindvars *bind_where_vars, const char *static_text,
                         int64_t value_int_any, const BINDVAR_TYPE bt)
 {
