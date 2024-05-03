@@ -313,7 +313,7 @@ int main()
     printf("TEST: SELECT TEST *****************************\n");
     Message *m5 = orma_selectFromMessage(o->db);
     printf("TEST: new message handle: %p\n", m5);
-    MessageList *ml = m5->message_idEq(m5, 344)->toList(m5);
+    MessageList *ml = m5->message_idEq(m5, 344)->orderByidDesc(m5)->toList(m5);
     // MessageList *ml = m5->toList(m5);
     printf("count m5: %p\n", ml);
     printf("TEST: ml->items=%ld\n", ml->items);

@@ -767,6 +767,16 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Set(__@@@TABLE@@@__* t, __@@@CTYPE
                 tbl_equalfuncs_3  += "    " + "t->" + lc(column_name) + ""+cmp_str+" = _FuncPtr0020_"+cmp_str+"" + lc(column_name)  + ";\n";
             }
         }
+
+        String[] list2 = new String[]{"Asc", "Desc"};
+        for (String cmp_str : list2)
+        {
+            tbl_equalfuncs_3  += "    " + table_name + "* (*_FuncPtr0020_"+cmp_str+"" + lc(column_name) +
+                ") (" + table_name + "*);\n";
+            tbl_equalfuncs_3  += "    " + "_FuncPtr0020_"+cmp_str+"" + lc(column_name) + " = &_orderBy" + lc(column_name) + ""+cmp_str+";" + "\n";
+            tbl_equalfuncs_3  += "    " + "t->orderBy" + lc(column_name) + ""+cmp_str+" = _FuncPtr0020_"+cmp_str+"" + lc(column_name)  + ";\n";
+        }
+
         tbl_equalfuncs_3  += "    " + "// ------------" + "\n";
     }
 
@@ -822,12 +832,30 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Ge(__@@@TABLE@@@__ *t, __@@@CTYPE_
 }
 """;
 
+String _f_orderbyasc = """
+static __@@@TABLE@@@__ *_orderBy__@@@COLUMN_NAME@@@__Asc(__@@@TABLE@@@__ *t)
+{
+    add_to_orderby_asc_sql(t->sql_orderby, "__@@@COLUMN_NAME@@@__", true);
+    return t;
+}
+""";
+
+String _f_orderbydesc = """
+static __@@@TABLE@@@__ *_orderBy__@@@COLUMN_NAME@@@__Desc(__@@@TABLE@@@__ *t)
+{
+    add_to_orderby_asc_sql(t->sql_orderby, "__@@@COLUMN_NAME@@@__", false);
+    return t;
+}
+""";
+
         tbl_equalfuncs_2  += r_(_f_eq, table_name, column_name, ctype);
         tbl_equalfuncs_2  += r_(_f_neq, table_name, column_name, ctype);
         tbl_equalfuncs_2  += r_(_f_lt, table_name, column_name, ctype);
         tbl_equalfuncs_2  += r_(_f_le, table_name, column_name, ctype);
         tbl_equalfuncs_2  += r_(_f_gt, table_name, column_name, ctype);
         tbl_equalfuncs_2  += r_(_f_ge, table_name, column_name, ctype);
+        tbl_equalfuncs_2  += r_(_f_orderbyasc, table_name, column_name, ctype);
+        tbl_equalfuncs_2  += r_(_f_orderbydesc, table_name, column_name, ctype);
     }
 
     static void add_equal_func(final String table_name, final String column_name, final COLTYPE ctype, final String ctype_firstupper)
@@ -863,6 +891,9 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Ge(__@@@TABLE@@@__ *t, __@@@CTYPE_
             tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Ge)(" + table_name + " *t, " +
                 ctype.ctype + " " + lc(column_name) + ");" + "\n";
         }
+
+        tbl_equalfuncs  += "    " + table_name + "* (*orderBy" + lc(column_name) + "Asc)(" + table_name + " *t);" + "\n";
+        tbl_equalfuncs  += "    " + table_name + "* (*orderBy" + lc(column_name) + "Desc)(" + table_name + " *t);" + "\n";
     }
 
     static String remove_public(final String in)

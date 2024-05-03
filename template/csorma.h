@@ -35,6 +35,7 @@ static const char csorma_global_version_asan_string[] = "0.99.0-ASAN";
 
 #define __WHERE_INIT " WHERE 1=1 "
 #define __SET_INIT ""
+#define __ORDER_BY ""
 
 typedef enum BINDVAR_TYPE {
     BINDVAR_TYPE_Int = 0,
@@ -116,6 +117,7 @@ void bind_to_where_sql_int(csorma_s *sql_where, OrmaBindvars *bind_where_vars, c
                         int64_t value_int_any, const BINDVAR_TYPE bt);
 void bind_to_where_sql_string(csorma_s *sql_where, OrmaBindvars *bind_where_vars, const char *static_text,
                         csorma_s *value_str, const BINDVAR_TYPE bt);
+void add_to_orderby_asc_sql(csorma_s *sql_orderby, const char *column_name, const bool asc);
 
 OrmaDatabase* OrmaDatabase_init(const uint8_t *directory_name, const uint32_t directory_name_len, 
                                 const uint8_t *file_name, const uint32_t file_name_len);

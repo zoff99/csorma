@@ -55,6 +55,7 @@ static __@@@TABLE@@@__List* _to_list(__@@@TABLE@@@__* t)
     char *err_msg = 0;
     csorma_s *sql_txt = csorma_str_con2(sql_txt, t->sql_start);
     sql_txt = csorma_str_con2(sql_txt, t->sql_where);
+    sql_txt = csorma_str_con2(sql_txt, t->sql_orderby);
     if (CSORMA_TRACE) { CSORMA_LOGGER_ALWAYS("%s", sql_txt->s); }
 
     int rc = sqlite3_prepare_v2(t->db, (const char *)sql_txt->s, -1, &res, 0);
@@ -338,6 +339,7 @@ __@@@FUNCS_FREE_STRS01@@@__
     // ------------------------
     csorma_str_free(t->sql_start);
     csorma_str_free(t->sql_where);
+    csorma_str_free(t->sql_orderby);
     csorma_str_free(t->sql_set);
     // ------------------------
     free(t);
@@ -351,7 +353,9 @@ __@@@TABLE@@@__* __new___@@@TABLElc@@@__(void *db)
     t->sql_where = csorma_str_con(t->sql_where, __WHERE_INIT, strlen(__WHERE_INIT));
     CSORMA_LOGGER_DEBUG("sql_where:%p %s", t->sql_where, t->sql_where->s);
     t->sql_set = csorma_str_con(t->sql_set, __SET_INIT, strlen(__SET_INIT));
-    CSORMA_LOGGER_DEBUG("sql_set:%p %s", t->sql_set, t->sql_where->s);
+    CSORMA_LOGGER_DEBUG("sql_set:%p %s", t->sql_set, t->sql_set->s);
+    t->sql_orderby = csorma_str_con(t->sql_orderby, __ORDER_BY, strlen(__ORDER_BY));
+    CSORMA_LOGGER_DEBUG("sql_orderby:%p %s", t->sql_orderby, t->sql_orderby->s);
     // --------------
     t->bind_where_vars = bindvar_init(t->bind_where_vars);
     t->bind_set_vars = bindvar_init(t->bind_set_vars);

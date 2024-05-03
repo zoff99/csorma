@@ -47,8 +47,8 @@ __@@@FUNCS_SET@@@__
     csorma_s *sql_where;
     csorma_s *sql_orderby;
     csorma_s *sql_limit;
-    OrmaBindvars *bind_where_vars;
     OrmaBindvars *bind_set_vars;
+    OrmaBindvars *bind_where_vars;
     // --------- meta data ------------------------------
 };
 
