@@ -130,8 +130,8 @@ int main()
     printf("TEST: CSORMA SQLite version: %s\n", csorma_get_sqlite_version());
 
     // ----------- initialize DB -----------
-    const char *db_dir = "./";
-    const char *db_filename = "main.db";
+    const char *db_dir = ":memory:";
+    const char *db_filename = "";
     o = OrmaDatabase_init((uint8_t*)db_dir,
             strlen(db_dir),
             (uint8_t*)db_filename, strlen(db_filename));
