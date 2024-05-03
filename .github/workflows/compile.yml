@@ -86,6 +86,9 @@ jobs:
           otool -L csorma_example || echo "NO ERR"
           ls -al csorma_example
           ls -hal csorma_example
+          otool -L csorma_test || echo "NO ERR"
+          ls -al csorma_test
+          ls -hal csorma_test
 
       - name: debug
         run: |
@@ -99,8 +102,7 @@ jobs:
       - name: run test
         run: |
           cd project/gen/
-          ./csorma_example
-          # sudo gdb -ex=r ./csorma_example
+          ./csorma_test && ./csorma_example
 
   test_wine:
     runs-on: ubuntu-22.04
