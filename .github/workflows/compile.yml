@@ -76,6 +76,7 @@ jobs:
         run: |
           cd project/gen/
           ls -al
+          export CFLAGS="-fsanitize=address -fno-omit-frame-pointer"
           make -j 6 all
 
       - name: check binary
@@ -98,8 +99,8 @@ jobs:
       - name: run test
         run: |
           cd project/gen/
-          # ./csorma_example
           sudo gdb -ex=r ./csorma_example
+          ./csorma_example
 
   test_wine:
     runs-on: ubuntu-22.04
