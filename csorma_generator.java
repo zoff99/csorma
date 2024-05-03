@@ -39,7 +39,7 @@ public class csorma_generator {
     static int column_num = 0;
     static String primary_key_column_name = "";
     static boolean primary_key_column_autoincr_if_needed = false;
-    static final String primary_key_column_autoincr_if_needed_str = " AUTOINCREMENT";
+    static String primary_key_column_autoincr_if_needed_str = " AUTOINCREMENT";
     static String primary_key_column_sqlitetype = "";
     static String tbl_insert = "";
     static String tbl_insert_sub01 = "";
@@ -255,6 +255,7 @@ public class csorma_generator {
         String table_name = "";
         primary_key_column_name = "";
         primary_key_column_autoincr_if_needed = false;
+        primary_key_column_autoincr_if_needed_str = "";
         primary_key_column_sqlitetype = "";
         BufferedReader reader;
 		try {
@@ -331,6 +332,7 @@ public class csorma_generator {
         final COLTYPE p5 = get_type(p2);
 
         primary_key_column_autoincr_if_needed = false;
+        primary_key_column_autoincr_if_needed_str = "";
         primary_key_column_sqlitetype = p5.sqlitetype;
         if (p5 == COLTYPE.LONG)
         {
@@ -339,6 +341,7 @@ public class csorma_generator {
             {
                 System.out.println("P: "+ "AUTOINCREMENT");
                 primary_key_column_autoincr_if_needed = true;
+                primary_key_column_autoincr_if_needed_str = " AUTOINCREMENT";
             }
         }
 
