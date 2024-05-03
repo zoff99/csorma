@@ -20,6 +20,10 @@ public int friendlist_id;
                  @Nullable
                          public String status_message;
 
+
+@Column
+public long message_id;
+                        
     @Column
     public int TOX_CONNECTION; // 0 --> NONE (offline), 1 --> TCP (online), 2 --> UDP (online)
 

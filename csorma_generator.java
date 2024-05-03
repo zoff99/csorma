@@ -29,6 +29,7 @@ public class csorma_generator {
     static final String tbl_fc_ext = ".c";
     static final String tbl_fh_ext = ".h";
     static final String tbl_s_ext = ".sql";
+    static final String tbl_cs_ext = ".txt";
 
     static String mkf_tables_o_list = "";
     static String mkf_tables_o_compile = "";
@@ -537,12 +538,23 @@ public class csorma_generator {
 
         try
         {
+            final String outstr = "CREATE TABLE IF NOT EXISTS \""+tablename+"\" (";
             File d = new File(workdir + File.separator + out_dir);
             d.mkdirs();
             FileWriter fstream = new FileWriter(workdir + File.separator + out_dir + tablename + tbl_s_ext,
                 StandardCharsets.UTF_8);
             BufferedWriter out = new BufferedWriter(fstream);
-            out.write("CREATE TABLE IF NOT EXISTS \""+tablename+"\" (");
+            out.write(outstr);
+            out.newLine();
+            out.close();
+
+            fstream = new FileWriter(workdir + File.separator + out_dir + tablename + tbl_cs_ext,
+                StandardCharsets.UTF_8);
+            out = new BufferedWriter(fstream);
+            out.write("char *sql2 = ");
+            out.write("\"");
+            out.write(outstr.replace("\"", "\\\""));
+            out.write("\"");
             out.newLine();
             out.close();
         }
@@ -630,6 +642,22 @@ public class csorma_generator {
 
         mkf_tables_o_compile += "" + tablename + ".o" + ": " + tablename + ".c"+ " " +tablename + ".h" + "\n";
         mkf_tables_o_compile += "\t" + "$(CC) -c $(CFLAGS) $(LIBS) $< -o $@" + "\n";
+
+        try
+        {
+            File d = new File(workdir + File.separator + out_dir);
+            d.mkdirs();
+            FileWriter fstream = new FileWriter(workdir + File.separator + out_dir + tablename + tbl_cs_ext,
+                StandardCharsets.UTF_8, true); // append!
+            BufferedWriter out = new BufferedWriter(fstream);
+            out.write(";");
+            out.newLine();
+            out.close();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     static void add_orderby_func(final String table_name, final String column_name, final COLTYPE ctype, final String ctype_firstupper)
@@ -938,6 +966,15 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Ge(__@@@TABLE@@@__ *t, __@@@CTYPE_
                 StandardCharsets.UTF_8, true); // append!
             BufferedWriter out = new BufferedWriter(fstream);
             out.write(txt_line);
+            out.newLine();
+            out.close();
+
+            fstream = new FileWriter(workdir + File.separator + out_dir + tablename + tbl_cs_ext,
+                StandardCharsets.UTF_8, true); // append!
+            out = new BufferedWriter(fstream);
+            out.write("\"");
+            out.write(txt_line.replace("\"", "\\\""));
+            out.write("\"");
             out.newLine();
             out.close();
         }
