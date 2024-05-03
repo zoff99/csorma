@@ -450,16 +450,16 @@ static uint8_t* str_buf_concat(const uint8_t *b1, const uint32_t b1_len, const u
 
 void OrmaDatabase_lock_lastrowid_mutex()
 {
-    CSORMA_LOGGER_DEBUG("trying to lock mutex");
+    CSORMA_LOGGER_DEBUG("trying to lock lastrowid mutex");
     pthread_mutex_lock(&__sorma_global_last_inserted_rowid___mutex);
-    CSORMA_LOGGER_DEBUG("mutex locked");
+    CSORMA_LOGGER_DEBUG("mutex lastrowid locked");
 }
 
 void OrmaDatabase_unlock_lastrowid_mutex()
 {
-    CSORMA_LOGGER_DEBUG("trying to UN-lock mutex");
+    CSORMA_LOGGER_DEBUG("trying to UN-lock lastrowid mutex");
     pthread_mutex_unlock(&__sorma_global_last_inserted_rowid___mutex);
-    CSORMA_LOGGER_DEBUG("mutex UN-locked");
+    CSORMA_LOGGER_DEBUG("mutex lastrowid UN-locked");
 }
 
 OrmaDatabase* OrmaDatabase_init(const uint8_t *directory_name, const uint32_t directory_name_len, 

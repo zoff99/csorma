@@ -194,11 +194,12 @@ char *sql2 = "CREATE TABLE IF NOT EXISTS \"Friendlist\" ("
 
     // ----------- update SQL -----------
     m99 = orma_updateMessage(o->db);
-    m99
+    int64_t affected_rows3 = m99
         // ->readEq(m99, false)
         ->message_idEq(m99, 123)
         ->textSet(m99, csb("test123_$!"))
         ->execute(m99);
+    printf("TEST: affected rows: %d\n", (int)affected_rows3);
     // ----------- update SQL -----------
 
     // ----------- count(*) SQL -----------
@@ -216,9 +217,10 @@ char *sql2 = "CREATE TABLE IF NOT EXISTS \"Friendlist\" ("
 
     // ----------- update SQL -----------
     m99 = orma_deleteFromMessage(o->db);
-    m99
+    int64_t affected_rows1 = m99
         ->message_idEq(m99, 111)
         ->execute(m99);
+    printf("TEST: affected rows: %d\n", (int)affected_rows1);
     // ----------- update SQL -----------
 
     // ----------- count(*) SQL -----------
@@ -234,9 +236,10 @@ char *sql2 = "CREATE TABLE IF NOT EXISTS \"Friendlist\" ("
 
     // ----------- update SQL -----------
     f99 = orma_deleteFromFriendlist(o->db);
-    f99
+    int64_t affected_rows2 = f99
         ->friendlist_idEq(f99, 111)
         ->execute(f99);
+    printf("TEST: affected rows: %d\n", (int)affected_rows2);
     // ----------- update SQL -----------
 
     // ----------- count(*) SQL -----------

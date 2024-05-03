@@ -130,8 +130,13 @@ int main()
     printf("TEST: CSORMA SQLite version: %s\n", csorma_get_sqlite_version());
 
     // ----------- initialize DB -----------
+#ifdef _TEST_INMEMORY_DB_
     const char *db_dir = ":memory:";
     const char *db_filename = "";
+#else // test with regular db file
+    const char *db_dir = "./";
+    const char *db_filename = "test.db";
+#endif
     o = OrmaDatabase_init((uint8_t*)db_dir,
             strlen(db_dir),
             (uint8_t*)db_filename, strlen(db_filename));
