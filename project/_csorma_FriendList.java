@@ -23,6 +23,9 @@ public int friendlist_id;
 
 @Column
 public long message_id;
+
+    @Column
+    public boolean read = false;
                         
     @Column
     public int TOX_CONNECTION; // 0 --> NONE (offline), 1 --> TCP (online), 2 --> UDP (online)
