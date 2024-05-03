@@ -117,7 +117,7 @@ __@@@COLUMNS_SETTERS_01@@@__
 
 static int64_t _count(__@@@TABLE@@@__* t)
 {
-    int64_t result = 0;
+    int64_t result = -1;
 
     t->sql_start = csorma_str_con(t->sql_start, __SELECT_COUNT_START, strlen(__SELECT_COUNT_START));
     t->sql_start = csorma_str_con(t->sql_start, __TABLE_NAME, strlen(__TABLE_NAME));
@@ -135,19 +135,25 @@ static int64_t _count(__@@@TABLE@@@__* t)
     if (rc == SQLITE_OK)
     {
         bind_all_where_bindvars(res, t->bind_where_vars);
+        int step = sqlite3_step(res);
+        CSORMA_LOGGER_DEBUG("step=%d", step);
+        if (step == SQLITE_ROW)
+        {
+            result = sqlite3_column_int64(res, 0);
+            CSORMA_LOGGER_DEBUG("%lld ", (long long)result);
+        }
+        else
+        {
+            CSORMA_LOGGER_ERROR("execute err=%s", sqlite3_errmsg(t->db));
+            result = -2;
+        }
     }
     else
     {
         CSORMA_LOGGER_ERROR("execute err=%s", sqlite3_errmsg(t->db));
+        result = -3;
     }
 
-    int step = sqlite3_step(res);
-    CSORMA_LOGGER_DEBUG("step=%d", step);
-    if (step == SQLITE_ROW)
-    {
-        result = sqlite3_column_int64(res, 0);
-        CSORMA_LOGGER_DEBUG("%lld ", (long long)result);
-    }
     CSORMA_LOGGER_DEBUG("sqlite3_finalize");
     sqlite3_finalize(res);
 
@@ -159,7 +165,7 @@ static int64_t _count(__@@@TABLE@@@__* t)
 
 static int64_t _execute(__@@@TABLE@@@__ *t)
 {
-    int64_t afftect_rows = 0;
+    int64_t afftect_rows = -1;
 
     if (t == NULL)
     {
@@ -181,26 +187,27 @@ static int64_t _execute(__@@@TABLE@@@__ *t)
     {
         bind_all_set_bindvars(res, t->bind_set_vars);
         bind_all_where_bindvars(res, t->bind_where_vars);
+
+        OrmaDatabase_lock_lastrowid_mutex();
+        int step = sqlite3_step(res);
+        CSORMA_LOGGER_DEBUG("step=%d", step);
+
+        if (step != SQLITE_DONE)
+        {
+            CSORMA_LOGGER_ERROR("execute err=%s", sqlite3_errmsg(t->db));
+            afftect_rows = -2;
+        }
+        else
+        {
+            afftect_rows = (int64_t)sqlite3_changes64(t->db);
+        }
+        OrmaDatabase_unlock_lastrowid_mutex();
     }
     else
     {
         CSORMA_LOGGER_ERROR("execute err=%s", sqlite3_errmsg(t->db));
+        afftect_rows = -3;
     }
-
-    OrmaDatabase_lock_lastrowid_mutex();
-    int step = sqlite3_step(res);
-    CSORMA_LOGGER_DEBUG("step=%d", step);
-
-    if (step != SQLITE_DONE)
-    {
-        CSORMA_LOGGER_ERROR("execute err=%s", sqlite3_errmsg(t->db));
-    }
-    else
-    {
-        afftect_rows = (int64_t)sqlite3_changes64(t->db);
-    }
-
-    OrmaDatabase_unlock_lastrowid_mutex();
 
     CSORMA_LOGGER_DEBUG("sqlite3_finalize");
     sqlite3_finalize(res);
@@ -239,26 +246,28 @@ __@@@COLUMNS_INSERTER_01@@@__
     if (rc == SQLITE_OK)
     {
 __@@@COLUMNS_INSERTER_BIND_02@@@__
+
+        OrmaDatabase_lock_lastrowid_mutex();
+        int step = sqlite3_step(res);
+        if (step != SQLITE_DONE)
+        {
+            CSORMA_LOGGER_ERROR("insert err=%s", sqlite3_errmsg(t->db));
+            last_insert_id = -2;
+        }
+        else
+        {
+            // HINT: we (sadly) need to globally guard this, because last inserted row id is global per database connection!
+            last_insert_id = sqlite3_last_insert_rowid(t->db);
+            CSORMA_LOGGER_DEBUG("The last Id of the inserted row is %ld", last_insert_id);
+            if (CSORMA_TRACE) { CSORMA_LOGGER_ALWAYS("last inserted rowid: %ld", last_insert_id); }
+        }
+        OrmaDatabase_unlock_lastrowid_mutex();
     }
     else
     {
         CSORMA_LOGGER_ERROR("execute err=%s", sqlite3_errmsg(t->db));
+        last_insert_id = -3;
     }
-
-    OrmaDatabase_lock_lastrowid_mutex();
-    int step = sqlite3_step(res);
-    if (step != SQLITE_DONE)
-    {
-        CSORMA_LOGGER_ERROR("insert err=%s", sqlite3_errmsg(t->db));
-    }
-    else
-    {
-        // HINT: we (sadly) need to globally guard this, because last inserted row id is global per database connection!
-        last_insert_id = sqlite3_last_insert_rowid(t->db);
-        CSORMA_LOGGER_DEBUG("The last Id of the inserted row is %ld", last_insert_id);
-        if (CSORMA_TRACE) { CSORMA_LOGGER_ALWAYS("last inserted rowid: %ld", last_insert_id); }
-    }
-    OrmaDatabase_unlock_lastrowid_mutex();
 
     CSORMA_LOGGER_DEBUG("sqlite3_finalize");
     sqlite3_finalize(res);
