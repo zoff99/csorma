@@ -437,8 +437,14 @@ static uint8_t* str_buf_concat(const uint8_t *b1, const uint32_t b1_len, const u
     {
         return NULL;
     }
-    memcpy(out, b1, b1_len);
-    memcpy(out + b1_len, b2, b2_len);
+    if (b1_len > 0)
+    {
+        memcpy(out, b1, b1_len);
+    }
+    if (b2_len > 0)
+    {
+        memcpy(out + b1_len, b2, b2_len);
+    }
     return out;
 }
 
