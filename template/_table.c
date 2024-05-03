@@ -157,11 +157,13 @@ static int64_t _count(__@@@TABLE@@@__* t)
     return result;
 }
 
-static void _execute(__@@@TABLE@@@__ *t)
+static int64_t _execute(__@@@TABLE@@@__ *t)
 {
+    int64_t afftect_rows = 0;
+
     if (t == NULL)
     {
-        return;
+        return afftect_rows;
     }
 
     sqlite3_stmt *res;
@@ -185,6 +187,7 @@ static void _execute(__@@@TABLE@@@__ *t)
         CSORMA_LOGGER_ERROR("execute err=%s", sqlite3_errmsg(t->db));
     }
 
+    OrmaDatabase_lock_lastrowid_mutex();
     int step = sqlite3_step(res);
     CSORMA_LOGGER_DEBUG("step=%d", step);
 
@@ -192,12 +195,20 @@ static void _execute(__@@@TABLE@@@__ *t)
     {
         CSORMA_LOGGER_ERROR("execute err=%s", sqlite3_errmsg(t->db));
     }
+    else
+    {
+        afftect_rows = (int64_t)sqlite3_changes64(t->db);
+    }
+
+    OrmaDatabase_unlock_lastrowid_mutex();
 
     CSORMA_LOGGER_DEBUG("sqlite3_finalize");
     sqlite3_finalize(res);
 
     csorma_str_free(sql_txt);
     __free___@@@TABLElc@@@__(t);
+
+    return afftect_rows;
 }
 
 int64_t __insert_into___@@@TABLElc@@@__(__@@@TABLE@@@__ *t)
@@ -353,7 +364,7 @@ __@@@FUNCS_SET03@@@__
     _FuncPtr001 = &_count;
     t->count = _FuncPtr001;
     // --------------
-    void (*_FuncPtr002) (__@@@TABLE@@@__*);
+    int64_t (*_FuncPtr002) (__@@@TABLE@@@__*);
     _FuncPtr002 = &_execute;
     t->execute = _FuncPtr002;
     // --------------

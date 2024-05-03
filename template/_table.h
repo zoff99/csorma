@@ -37,7 +37,7 @@ __@@@FUNCS_SET@@@__
     // --------- functions B ------------------------------
     int64_t (*count)(__@@@TABLE@@@__ *t);
     __@@@TABLE@@@__List* (*toList)(__@@@TABLE@@@__ *t);
-    void (*execute)(__@@@TABLE@@@__ *t);
+    int64_t (*execute)(__@@@TABLE@@@__ *t);
     // --------- functions ------------------------------
 
     // --------- meta data ------------------------------
