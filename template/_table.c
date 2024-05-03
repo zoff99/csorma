@@ -53,7 +53,7 @@ static __@@@TABLE@@@__List* _to_list(__@@@TABLE@@@__* t)
 
     sqlite3_stmt *res;
     char *err_msg = 0;
-    csorma_s *sql_txt = csorma_str_con2(sql_txt, t->sql_start);
+    csorma_s *sql_txt = csorma_str_con2(NULL, t->sql_start);
     sql_txt = csorma_str_con2(sql_txt, t->sql_where);
     sql_txt = csorma_str_con2(sql_txt, t->sql_orderby);
     if (CSORMA_TRACE) { CSORMA_LOGGER_ALWAYS("%s", sql_txt->s); }
@@ -125,7 +125,7 @@ static int64_t _count(__@@@TABLE@@@__* t)
 
     sqlite3_stmt *res;
     char *err_msg = 0;
-    csorma_s *sql_txt = csorma_str_con2(sql_txt, t->sql_start);
+    csorma_s *sql_txt = csorma_str_con2(NULL, t->sql_start);
     sql_txt = csorma_str_con2(sql_txt, t->sql_where);
     if (CSORMA_TRACE) { CSORMA_LOGGER_ALWAYS("%s", sql_txt->s); }
 
@@ -175,7 +175,7 @@ static int64_t _execute(__@@@TABLE@@@__ *t)
 
     sqlite3_stmt *res;
     char *err_msg = 0;
-    csorma_s *sql_txt = csorma_str_con2(sql_txt, t->sql_start);
+    csorma_s *sql_txt = csorma_str_con2(NULL, t->sql_start);
     sql_txt = csorma_str_con2(sql_txt, t->sql_set);
     sql_txt = csorma_str_con2(sql_txt, t->sql_where);
     if (CSORMA_TRACE) { CSORMA_LOGGER_ALWAYS("%s", sql_txt->s); }
@@ -233,7 +233,7 @@ int64_t __insert_into___@@@TABLElc@@@__(__@@@TABLE@@@__ *t)
 
     sqlite3_stmt *res;
     char *err_msg = 0;
-    csorma_s *sql_txt = csorma_str_con2(sql_txt, t->sql_start);
+    csorma_s *sql_txt = csorma_str_con2(NULL, t->sql_start);
 
 __@@@COLUMNS_INSERTER_01@@@__
 
