@@ -82,8 +82,8 @@ void *thr_1_func(void *data)
 {
     while (thr_1_stop == 0) {
         // ----------- insert SQL -----------
-        csorma_s *str1;
-        csorma_s *str2;
+        csorma_s *str1 = NULL;
+        csorma_s *str2 = NULL;
         str1 = csb("AAAAAAA_x");
         // str2 = csc("thread_1________TEXT11________", strlen("thread_1________TEXT11________"));
         // str2 = csorma_str_con(str2, "thread_1_x", strlen("thread_1_x"));
@@ -106,7 +106,7 @@ void *thr_2_func(void *data)
 {
     while (thr_2_stop == 0) {
         // ----------- insert SQL -----------
-        csorma_s *str1;
+        csorma_s *str1 = NULL;
         str1 = csb("AAAAAAA_x");
         Message *m = orma_new_Message(o->db);
         // printf("TEST: THR2: new message handle: %p\n", m);
@@ -191,8 +191,8 @@ int main()
     // ----------- freehand SQL -----------
 
     // ----------- insert SQL -----------
-    csorma_s *str1;
-    csorma_s *str2;
+    csorma_s *str1 = NULL;
+    csorma_s *str2 = NULL;
     str1 = csb("AAAAAAA");
     // str2 = csc("________TEXT11________", strlen("________TEXT11________"));
     // str2 = csorma_str_con(str2, "1234", 4);
