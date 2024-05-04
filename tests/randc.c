@@ -2,6 +2,20 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/time.h>
+#include <stdint.h>
+
+void usleep_usec(uint64_t usec)
+{
+    struct timespec ts;
+    ts.tv_sec = usec / 1000000;
+    ts.tv_nsec = (usec % 1000000) * 1000;
+    nanosleep(&ts, NULL);
+}
+
+void yieldcpu(uint32_t ms)
+{
+    usleep_usec(1000 * ms);
+}
 
 char* generateRandomString() {
     char charset[] = "abcdefghijklmnopqrstuvwxyz0123456789_";
@@ -29,6 +43,7 @@ char* generateRandomString() {
 
 int main() {
     char* randomChars = generateRandomString();
+    yieldcpu(5);
     printf("%s\n", randomChars);
     free(randomChars);
 
