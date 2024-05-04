@@ -6,7 +6,7 @@ typedef struct __@@@TABLE@@@__ __@@@TABLE@@@__;
 
 typedef struct __@@@TABLE@@@__List {
     int64_t items;
-    __@@@TABLE@@@__** ml;
+    __@@@TABLE@@@__** l;
 } __@@@TABLE@@@__List;
 
 struct __@@@TABLE@@@__ {
