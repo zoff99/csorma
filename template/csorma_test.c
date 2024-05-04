@@ -10,6 +10,15 @@
 extern "C" {
 #endif
 
+#ifdef UNUSED
+#elif defined(__GNUC__)
+# define UNUSED(x) UNUSED_ ## x __attribute__((unused))
+#elif defined(__LCLINT__)
+# define UNUSED(x) /*@unused@*/ x
+#else
+# define UNUSED(x) x
+#endif
+
 pthread_t thr_1;
 pthread_t thr_2;
 int thr_1_stop = 0;
@@ -58,7 +67,7 @@ static void read_file_to_buf1()
     long numbytes = ftell(f);
     fseek(f, 0L, SEEK_SET);
     char *buf = (char*)calloc(numbytes, sizeof(char));
-    size_t fr1 = fread(buf, sizeof(char), numbytes, f);
+    size_t UNUSED(fr1) = fread(buf, sizeof(char), numbytes, f);
     fclose(f);
     fc.bytes = numbytes;
     fc.buf = buf;
@@ -72,13 +81,13 @@ static void read_file_to_buf2()
     long numbytes = ftell(f);
     fseek(f, 0L, SEEK_SET);
     char *buf = (char*)calloc(numbytes, sizeof(char));
-    size_t fr1 = fread(buf, sizeof(char), numbytes, f);
+    size_t UNUSED(fr1) = fread(buf, sizeof(char), numbytes, f);
     fclose(f);
     fc.bytes = numbytes;
     fc.buf = buf;
 }
 
-void *thr_1_func(void *data)
+void *thr_1_func(void * UNUSED(data))
 {
     while (thr_1_stop == 0) {
         // ----------- insert SQL -----------
@@ -102,7 +111,7 @@ void *thr_1_func(void *data)
     pthread_exit(0);
 }
 
-void *thr_2_func(void *data)
+void *thr_2_func(void * UNUSED(data))
 {
     while (thr_2_stop == 0) {
         // ----------- insert SQL -----------
@@ -140,7 +149,7 @@ int main()
     o = OrmaDatabase_init((uint8_t*)db_dir,
             strlen(db_dir),
             (uint8_t*)db_filename, strlen(db_filename));
-    printf("TEST: database handle: %p\n", o);
+    printf("TEST: database handle: %p\n", (void *)o);
     // ----------- initialize DB -----------
 
     // ----------- freehand SQL -----------
@@ -197,7 +206,7 @@ int main()
     // str2 = csc("________TEXT11________", strlen("________TEXT11________"));
     // str2 = csorma_str_con(str2, "1234", 4);
     Message *m = orma_new_Message(o->db);
-    printf("TEST: new message handle: %p\n", m);
+    printf("TEST: new message handle: %p\n", (void *)m);
     m->tox_friendpubkey = str1;
 
     uint8_t *c = calloc(1, 5);
@@ -252,13 +261,13 @@ int main()
 
     // ----------- count(*) SQL -----------
     Message *m3 = orma_selectFromMessage(o->db);
-    printf("TEST: new message handle: %p\n", m3);
+    printf("TEST: new message handle: %p\n", (void *)m3);
     printf("count m3: %d\n", (int)m3->message_idEq(m3, 3)->message_idEq(m3, 3)->count(m3));
     // ----------- count(*) SQL -----------
 
     // ----------- count(*) SQL -----------
     Message *m4 = orma_selectFromMessage(o->db);
-    printf("TEST: new message handle: %p\n", m4);
+    printf("TEST: new message handle: %p\n", (void *)m4);
     printf("count m4: %d\n", (int)m4->message_idEq(m4, 344)->count(m4));
     // ----------- count(*) SQL -----------
 
@@ -312,10 +321,10 @@ int main()
     // ----------- slect test -----------
     printf("TEST: SELECT TEST *****************************\n");
     Message *m5 = orma_selectFromMessage(o->db);
-    printf("TEST: new message handle: %p\n", m5);
+    printf("TEST: new message handle: %p\n", (void *)m5);
     MessageList *ml = m5->message_idEq(m5, 344)->orderByidDesc(m5)->toList(m5);
     // MessageList *ml = m5->toList(m5);
-    printf("count m5: %p\n", ml);
+    printf("count m5: %p\n", (void *)ml);
     printf("TEST: ml->items=%ld\n", ml->items);
     Message **md = ml->ml;
     for(int i=0;i<ml->items;i++)

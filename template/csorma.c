@@ -14,6 +14,15 @@
 extern "C" {
 #endif
 
+#ifdef UNUSED
+#elif defined(__GNUC__)
+# define UNUSED(x) UNUSED_ ## x __attribute__((unused))
+#elif defined(__LCLINT__)
+# define UNUSED(x) /*@unused@*/ x
+#else
+# define UNUSED(x) x
+#endif
+
 pthread_mutex_t __sorma_global_last_inserted_rowid___mutex;
 const char* BINDVAR_TYPE_NAME[] = { "Int", "Long", "String", "Boolean" };
 
@@ -393,7 +402,7 @@ void bind_to_set_sql_int(csorma_s *sql_set, OrmaBindvars *bind_set_vars, const c
 }
 
 void bind_to_set_sql_string(csorma_s *sql_set, OrmaBindvars *bind_set_vars, const char *static_text,
-                        csorma_s *value_str, const BINDVAR_TYPE bt)
+                        csorma_s *value_str, const BINDVAR_TYPE UNUSED(bt))
 {
     sql_set = csorma_str_con(sql_set, static_text, strlen(static_text));
     sql_set = csorma_str_int32t(sql_set, __BINDVAR_OFFSET_SET + bind_set_vars->items);
@@ -449,7 +458,7 @@ void bind_to_where_sql_int(csorma_s *sql_where, OrmaBindvars *bind_where_vars, c
 }
 
 void bind_to_where_sql_string(csorma_s *sql_where, OrmaBindvars *bind_where_vars, const char *static_text,
-                        csorma_s *value_str, const BINDVAR_TYPE bt, const char* static_post_text)
+                        csorma_s *value_str, const BINDVAR_TYPE UNUSED(bt), const char* static_post_text)
 {
     sql_where = csorma_str_con(sql_where, static_text, strlen(static_text));
     sql_where = csorma_str_int32t(sql_where, __BINDVAR_OFFSET_WHERE + bind_where_vars->items);
