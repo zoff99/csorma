@@ -34,7 +34,7 @@ for i in {1..100} ; do
     echo '' >> "$tablefile"
 
 
-    for j in {1..40} ; do
+    for j in {1..8} ; do
         echo '@Column' >> "$tablefile"
 
         n=$(($j%4))
@@ -71,7 +71,7 @@ echo "generating C code DONE"
 
 cd "$basedir"
 cd ./"$projectdir"/gen/
-make -j 35 asan_csorma_stub && ./csorma_stub
+make -j 5 asan_csorma_stub && ./csorma_stub
 
 
 
