@@ -63,9 +63,9 @@ int main()
   "\"filetransfer_kind\" INTEGER,"
   "PRIMARY KEY(\"id\" )"
 ");"
-        "insert into message(message_id,tox_friendpubkey) values('123', 'aaaaaaaaaaaaaaaaaaa');"
+        "insert into message(message_id,tox_friendpubkey) values('123', '0aaaaaaaaaaaaaaaaaaa');"
         "insert into message(message_id,tox_friendpubkey) values('111', '00f03428wierwrwer09wi9qie');"
-        "insert into message(message_id,read,tox_friendpubkey) values('344', true, '11f03428wierwrwer09wi9qie');"
+        "insert into message(message_id,read,tox_friendpubkey) values('344', true, '11f03528wierwrwer09wi9qie');"
         "insert into message(message_id,tox_friendpubkey) values('344', '11f03428wierwrwer09wi9qie');"
         "insert into message(message_id,tox_friendpubkey) values('344', '33f03428wierwrwer09wi9qie');"
         ;
@@ -196,7 +196,7 @@ char *sql2 = "CREATE TABLE IF NOT EXISTS \"Friendlist\" ("
 
     // ----------- count(*) SQL -----------
     m99 = orma_selectFromMessage(o->db);
-    printf("TEST: count m: %d\n", (int)m99->readEq(m99, true)->tox_friendpubkeyLike(m99, csb("11f03"))->count(m99));
+    printf("TEST: count m(like): %d\n", (int)m99->tox_friendpubkeyLike(m99, csb("11f035%"))->count(m99));
     // ----------- count(*) SQL -----------
 
     // ----------- count(*) SQL -----------

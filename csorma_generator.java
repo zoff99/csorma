@@ -70,7 +70,6 @@ public class csorma_generator {
     static String tbl_orderbyfuncs = "";
     static String tbl_setfuncs = "";
 
-
     enum COLTYPE
     {
         INT(1), LONG(2), STRING(3), BOOLEAN(4), UNKNOWN(999);
@@ -837,7 +836,7 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Set(__@@@TABLE@@@__* t, __@@@CTYPE
     static void add_equal_func03(final String table_name, final String column_name,
             final COLTYPE ctype, final String ctype_firstupper)
     {
-        String[] list = new String[]{"Eq","NotEq","Lt","Le","Gt","Ge","Like","NotLike"};
+        String[] list = new String[]{"Eq","NotEq","Lt","Le","Gt","Ge"};
         for (String cmp_str : list)
         {
             if ((ctype == COLTYPE.INT)||(ctype == COLTYPE.LONG)||(ctype == COLTYPE.BOOLEAN))
@@ -854,6 +853,16 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Set(__@@@TABLE@@@__* t, __@@@CTYPE
                 tbl_equalfuncs_3  += "    " + "_FuncPtr0020_"+cmp_str+"" + lc(column_name) + " = &_" + lc(column_name) + ""+cmp_str+";" + "\n";
                 tbl_equalfuncs_3  += "    " + "t->" + lc(column_name) + ""+cmp_str+" = _FuncPtr0020_"+cmp_str+"" + lc(column_name)  + ";\n";
             }
+        }
+
+        list = new String[]{"Like","NotLike"};
+        for (String cmp_str : list)
+        {
+            // like and notlike always requires a string argument
+            tbl_equalfuncs_3  += "    " + table_name + "* (*_FuncPtr0020_"+cmp_str+"" + lc(column_name) +
+                ") (" + table_name + "*, " + "csorma_s *" + ");\n";
+            tbl_equalfuncs_3  += "    " + "_FuncPtr0020_"+cmp_str+"" + lc(column_name) + " = &_" + lc(column_name) + ""+cmp_str+";" + "\n";
+            tbl_equalfuncs_3  += "    " + "t->" + lc(column_name) + ""+cmp_str+" = _FuncPtr0020_"+cmp_str+"" + lc(column_name)  + ";\n";
         }
 
         String[] list2 = new String[]{"Asc", "Desc"};
@@ -921,17 +930,17 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Ge(__@@@TABLE@@@__ *t, __@@@CTYPE_
 """;
 
 String _f_like = """
-static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Like(__@@@TABLE@@@__ *t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
+static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Like(__@@@TABLE@@@__ *t, csorma_s * __@@@COLUMN_NAME@@@__)
 {
-    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__ LIKE ?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__, (const char*)" ESCAPE '\\\\' ");
+    bind_to_where_sql_string(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__ LIKE ?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE_String, (const char*)" ESCAPE '\\\\' ");
     return t;
 }
 """;
 
 String _f_notlike = """
-static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__NotLike(__@@@TABLE@@@__ *t, __@@@CTYPE_CONST_CTYPE@@@__ __@@@CTYPE_CTYPE@@@__ __@@@COLUMN_NAME@@@__)
+static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__NotLike(__@@@TABLE@@@__ *t, csorma_s * __@@@COLUMN_NAME@@@__)
 {
-    bind_to_where_sql___@@@CTYPE_BCSTYPE@@@__(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__ NOT LIKE ?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE___@@@CTYPE_CSTYPE@@@__, (const char*)" ESCAPE '\\\\' ");
+    bind_to_where_sql_string(t->sql_where, t->bind_where_vars, "and __@@@COLUMN_NAME@@@__ NOT LIKE ?", __@@@COLUMN_NAME@@@__, BINDVAR_TYPE_String, (const char*)" ESCAPE '\\\\' ");
     return t;
 }
 """;
@@ -981,10 +990,6 @@ static __@@@TABLE@@@__ *_orderBy__@@@COLUMN_NAME@@@__Desc(__@@@TABLE@@@__ *t)
                 ctype.ctype + " " + lc(column_name) + ");" + "\n";
             tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Ge)(" + table_name + " *t, const " +
                 ctype.ctype + " " + lc(column_name) + ");" + "\n";
-            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Like)(" + table_name + " *t, const " +
-                ctype.ctype + " " + lc(column_name) + ");" + "\n";
-            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "NotLike)(" + table_name + " *t, const " +
-                ctype.ctype + " " + lc(column_name) + ");" + "\n";
         }
         else if (ctype == COLTYPE.STRING)
         {
@@ -1000,11 +1005,12 @@ static __@@@TABLE@@@__ *_orderBy__@@@COLUMN_NAME@@@__Desc(__@@@TABLE@@@__ *t)
                 ctype.ctype + " " + lc(column_name) + ");" + "\n";
             tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Ge)(" + table_name + " *t, " +
                 ctype.ctype + " " + lc(column_name) + ");" + "\n";
-            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Like)(" + table_name + " *t, " +
-                ctype.ctype + " " + lc(column_name) + ");" + "\n";
-            tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "NotLike)(" + table_name + " *t, " +
-                ctype.ctype + " " + lc(column_name) + ");" + "\n";
         }
+
+        tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Like)(" + table_name + " *t, " +
+            "csorma_s *" + " " + lc(column_name) + ");" + "\n";
+        tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "NotLike)(" + table_name + " *t, " +
+            "csorma_s *" + " " + lc(column_name) + ");" + "\n";
 
         tbl_equalfuncs  += "    " + table_name + "* (*orderBy" + lc(column_name) + "Asc)(" + table_name + " *t);" + "\n";
         tbl_equalfuncs  += "    " + table_name + "* (*orderBy" + lc(column_name) + "Desc)(" + table_name + " *t);" + "\n";
