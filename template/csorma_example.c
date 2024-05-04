@@ -122,7 +122,7 @@ char *sql2 = "CREATE TABLE IF NOT EXISTS \"Friendlist\" ("
     Message *m5 = orma_selectFromMessage(o->db);
     MessageList *ml = m5->message_idEq(m5, 344)->toList(m5);
     printf("TEST: ml->items=%ld\n", ml->items);
-    Message **md = ml->ml;
+    Message **md = ml->l;
     for(int i=0;i<ml->items;i++)
     {
         printf("TEST: id=%ld\n", (*md)->id);
@@ -147,7 +147,7 @@ char *sql2 = "CREATE TABLE IF NOT EXISTS \"Friendlist\" ("
                         ->message_idEq(mx1, 344)
                         ->toList(mx1);
     printf("TEST: ml6->items=%ld\n", ml6->items);
-    Message **md6 = ml6->ml;
+    Message **md6 = ml6->l;
     for(int i=0;i<ml6->items;i++)
     {
         printf("TEST: id=%ld\n", (*md6)->id);
@@ -171,7 +171,7 @@ char *sql2 = "CREATE TABLE IF NOT EXISTS \"Friendlist\" ("
                         ->message_idEq(mx1, 344)
                         ->toList(mx1);
     printf("TEST: ml7->items=%ld\n", ml6->items);
-    Message **md6 = ml6->ml;
+    Message **md6 = ml6->l;
     for(int i=0;i<ml6->items;i++)
     {
         printf("TEST: id=%ld\n", (*md6)->id);

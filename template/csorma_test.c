@@ -326,7 +326,7 @@ int main()
     // MessageList *ml = m5->toList(m5);
     printf("count m5: %p\n", (void *)ml);
     printf("TEST: ml->items=%ld\n", ml->items);
-    Message **md = ml->ml;
+    Message **md = ml->l;
     for(int i=0;i<ml->items;i++)
     {
         printf("TEST: id=%ld\n", (*md)->id);
