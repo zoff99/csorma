@@ -39,20 +39,20 @@ __@@@RT_FUNCS_SET20@@@__
     // --------- meta data ------------------------------
 };
 #define orma_new___@@@TABLE@@@__(db) __new___@@@TABLElc@@@__(db)
-#define orma_insertInto__@@@TABLE@@@__(m) __insert_into___@@@TABLElc@@@__(m)
+#define orma_insertInto__@@@TABLE@@@__(t) __insert_into___@@@TABLElc@@@__(t)
 #define orma_selectFrom__@@@TABLE@@@__(db) __select_from___@@@TABLElc@@@__(db)
 #define orma_update__@@@TABLE@@@__(db) __update___@@@TABLElc@@@__(db)
 #define orma_deleteFrom__@@@TABLE@@@__(db) __delete_from___@@@TABLElc@@@__(db)
-#define orma_free___@@@TABLE@@@__(m) __free___@@@TABLElc@@@__(m)
-#define orma_free___@@@TABLE@@@__List(ml) __free___@@@TABLElc@@@___list(ml)
+#define orma_free___@@@TABLE@@@__(t) __free___@@@TABLElc@@@__(t)
+#define orma_free___@@@TABLE@@@__List(l) __free___@@@TABLElc@@@___list(l)
 
 __@@@TABLE@@@__ *__new___@@@TABLElc@@@__(void *db);
-int64_t __insert_into___@@@TABLElc@@@__(__@@@TABLE@@@__ *m);
+int64_t __insert_into___@@@TABLElc@@@__(__@@@TABLE@@@__ *t);
 __@@@TABLE@@@__ *__update___@@@TABLElc@@@__(void *db);
 __@@@TABLE@@@__ *__delete_from___@@@TABLElc@@@__(void *db);
 __@@@TABLE@@@__ *__select_from___@@@TABLElc@@@__(void *db);
-void __free___@@@TABLElc@@@__(__@@@TABLE@@@__ *m);
-void __free___@@@TABLElc@@@___list(__@@@TABLE@@@__List *ml);
+void __free___@@@TABLElc@@@__(__@@@TABLE@@@__ *t);
+void __free___@@@TABLElc@@@___list(__@@@TABLE@@@__List *l);
 
 // ==================================================
 //      END TABLE: __@@@TABLE@@@__
