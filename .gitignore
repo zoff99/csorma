@@ -20,3 +20,4 @@ project/*.c
 project/gen/
 mycoolstuff/
 tests/randc
+mysuperstuff/
