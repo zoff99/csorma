@@ -18,3 +18,5 @@ libcsorma.so
 Friendlist.o
 project/*.c
 project/gen/
+mycoolstuff/
+tests/randc
