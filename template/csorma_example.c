@@ -8,6 +8,15 @@
 extern "C" {
 #endif
 
+#ifdef UNUSED
+#elif defined(__GNUC__)
+# define UNUSED(x) UNUSED_ ## x __attribute__((unused))
+#elif defined(__LCLINT__)
+# define UNUSED(x) /*@unused@*/ x
+#else
+# define UNUSED(x) x
+#endif
+
 int main()
 {
     printf("TEST: CSORMA version: %s\n", csorma_get_version());
@@ -60,7 +69,7 @@ int main()
         "insert into message(message_id,tox_friendpubkey) values('344', '11f03428wierwrwer09wi9qie');"
         "insert into message(message_id,tox_friendpubkey) values('344', '33f03428wierwrwer09wi9qie');"
         ;
-    CSORMA_GENERIC_RESULT res1 = OrmaDatabase_run_multi_sql(o, (const uint8_t *)sql1);
+    CSORMA_GENERIC_RESULT UNUSED(res1) = OrmaDatabase_run_multi_sql(o, (const uint8_t *)sql1);
     // ----------- freehand SQL to create TABLE -----------
 
     // ----------- freehand SQL to create TABLE -----------
@@ -90,7 +99,7 @@ char *sql2 = "CREATE TABLE IF NOT EXISTS \"Friendlist\" ("
         "insert into Friendlist(message_id,tox_public_key_string) values('344', '1xf03428wierwrwer09wi9qie');"
         "insert into Friendlist(message_id,tox_public_key_string) values('344', '33f03428wierwrwer09wi9qie');"
         ;
-    CSORMA_GENERIC_RESULT res2 = OrmaDatabase_run_multi_sql(o, (const uint8_t *)sql2);
+    CSORMA_GENERIC_RESULT UNUSED(res2) = OrmaDatabase_run_multi_sql(o, (const uint8_t *)sql2);
     // ----------- freehand SQL to create TABLE -----------
 
     // ----------- insert SQL -----------
@@ -100,7 +109,7 @@ char *sql2 = "CREATE TABLE IF NOT EXISTS \"Friendlist\" ("
     m->tox_friendpubkey = str1;
     m->text = str2;
     m->message_id = 344;
-    int64_t rowid = orma_insertIntoMessage(m);
+    int64_t UNUSED(rowid) = orma_insertIntoMessage(m);
     orma_free_Message(m);
     // ----------- insert SQL -----------
 

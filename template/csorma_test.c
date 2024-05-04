@@ -10,6 +10,15 @@
 extern "C" {
 #endif
 
+#ifdef UNUSED
+#elif defined(__GNUC__)
+# define UNUSED(x) UNUSED_ ## x __attribute__((unused))
+#elif defined(__LCLINT__)
+# define UNUSED(x) /*@unused@*/ x
+#else
+# define UNUSED(x) x
+#endif
+
 pthread_t thr_1;
 pthread_t thr_2;
 int thr_1_stop = 0;
@@ -58,7 +67,7 @@ static void read_file_to_buf1()
     long numbytes = ftell(f);
     fseek(f, 0L, SEEK_SET);
     char *buf = (char*)calloc(numbytes, sizeof(char));
-    size_t fr1 = fread(buf, sizeof(char), numbytes, f);
+    size_t UNUSED(fr1) = fread(buf, sizeof(char), numbytes, f);
     fclose(f);
     fc.bytes = numbytes;
     fc.buf = buf;
@@ -72,7 +81,7 @@ static void read_file_to_buf2()
     long numbytes = ftell(f);
     fseek(f, 0L, SEEK_SET);
     char *buf = (char*)calloc(numbytes, sizeof(char));
-    size_t fr1 = fread(buf, sizeof(char), numbytes, f);
+    size_t UNUSED(fr1) = fread(buf, sizeof(char), numbytes, f);
     fclose(f);
     fc.bytes = numbytes;
     fc.buf = buf;
