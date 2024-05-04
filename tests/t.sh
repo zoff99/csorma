@@ -16,7 +16,7 @@ projectdir="mycoolstuff"
 mkdir -p "$projectdir"/
 cd "$projectdir"/
 
-for i in {1..200} ; do
+for i in {1..100} ; do
 
     #{
 
