@@ -735,11 +735,11 @@ public class csorma_generator {
             BufferedWriter out = new BufferedWriter(fstream);
             out.write("    ;");
             out.newLine();
-            out.write("    printf(\"TEST: creating table: " + tablename + "\\n\");");
+            out.write("    printf(\"STUB: creating table: " + tablename + "\\n\");");
             out.newLine();
             out.write("    CSORMA_GENERIC_RESULT res1 = OrmaDatabase_run_multi_sql(o, (const uint8_t *)sql2);");
             out.newLine();
-            out.write("    printf(\"TEST: res1: %d\\n\", res1);");
+            out.write("    printf(\"STUB: res1: %d\\n\", res1);");
             out.newLine();
             out.write("    }");
             out.newLine();
