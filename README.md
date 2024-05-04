@@ -221,6 +221,16 @@ OrmaDatabase *o = OrmaDatabase_init(
 );
 ```
 
+you can also initialize an in-memory database:
+```C
+const char *db_dir = ":memory:";
+const char *db_filename = "";
+OrmaDatabase *o = OrmaDatabase_init(
+    (uint8_t*)db_dir, strlen(db_dir),
+    (uint8_t*)db_filename, strlen(db_filename)
+);
+```
+
 run a freehand SQL:
 ```C
 char *sql1 = "CREATE TABLE IF NOT EXISTS Message ("
