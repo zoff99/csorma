@@ -15,7 +15,7 @@ endif
 
 
 ASANCFLAGS = -fsanitize=address -fno-omit-frame-pointer -static-libasan
-CFLAGS += -g -O3 -fPIC -Wall -pthread -Isqlite/ -I./
+CFLAGS += -g -O3 -fPIC -Wall -Wextra -std=c99 -pthread -Isqlite/ -I./
 LIBSSQLITE3 = -lm
 
 # ------------------------------

@@ -87,7 +87,7 @@ static void read_file_to_buf2()
     fc.buf = buf;
 }
 
-void *thr_1_func(void *data)
+void *thr_1_func(void * UNUSED(data))
 {
     while (thr_1_stop == 0) {
         // ----------- insert SQL -----------
@@ -111,7 +111,7 @@ void *thr_1_func(void *data)
     pthread_exit(0);
 }
 
-void *thr_2_func(void *data)
+void *thr_2_func(void * UNUSED(data))
 {
     while (thr_2_stop == 0) {
         // ----------- insert SQL -----------
