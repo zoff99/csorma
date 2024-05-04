@@ -77,8 +77,8 @@ the output should look (something) like this:
 ```
 STUB: CSORMA version: 0.99.0
 STUB: CSORMA SQLite version: 3.45.3
-TEST: creating table: Person
-TEST: res1: 0
+STUB: creating table: Person
+STUB: res1: 0
 
 STUB: all OK
 ```
@@ -114,7 +114,7 @@ printf("STUB: count: %d\n", (int)p->social_numberEq(p, 381739)->count(p));
 }
 ```
 
-now do the same but use the `less than` operator `Lt()`
+now we do the same but use the `less than` operator `Lt()`
 ```C
 {
 Person *p = orma_selectFromPerson(o->db);
@@ -122,7 +122,7 @@ printf("STUB: count: %d\n", (int)p->social_numberLt(p, 400000)->count(p));
 }
 ```
 
-now insert another Person:
+and insert another Person:
 ```C
 {
 Person *p = orma_new_Person(o->db);
@@ -134,7 +134,77 @@ printf("STUB: inserted id: %lld\n", (long long)inserted_id);
 }
 ```
 
+lets iterate through the result of a select statement:
+```C
+{
+Person *p = orma_selectFromPerson(o->db);
+PersonList *pl = p->toList(p);
+printf("STUB: pl->items=%lld\n", (long long)pl->items);
+Person **pd = pl->l;
+for(int i=0;i<pl->items;i++)
+{
+    printf("STUB: id=%ld\n", (*pd)->id);
+    printf("STUB: name=\"%s\"\n", (*pd)->name->s);
+    printf("STUB: address=\"%s\"\n", (*pd)->address->s);
+    printf("STUB: social_number=\"%d\"\n", (*pd)->social_number);
+    pd++;
+}
+orma_free_PersonList(pl);
+}
+```
+
+here we update all addresses:
+```C
+{
+Person *p = orma_updatePerson(o->db);
+int64_t affected_rows3 = p->addressSet(p, csb("1337 Funky Lane, Lala Land"))->execute(p);
+printf("STUB: affected rows: %d\n", (int)affected_rows3);
+}
+```
+
+if we do the iteration from above again we will see the changed data<br>
+it will look something like that:
+```
+STUB: affected rows: 2
+STUB: pl->items=2
+STUB: id=1
+STUB: name="Larry Wilson"
+STUB: address="1337 Funky Lane, Lala Land"
+STUB: social_number="381739"
+STUB: id=2
+STUB: name="Martha Liebowitz"
+STUB: address="1337 Funky Lane, Lala Land"
+STUB: social_number="139807"
+```
+
+delete specifc rows:
+```C
+{
+Person *p = orma_deleteFromPerson(o->db);
+int64_t affected_rows2 = p->social_numberEq(p, 139807)->
+    nameEq(p, csb("Martha Liebowitz"))->execute(p);
+printf("STUB: affected rows: %d\n", (int)affected_rows2);
+}
+```
+
+in the end run a freehand SQL to drop the table:
+```C
+{
+char *sql3 = "DROP TABLE Person;";
+CSORMA_GENERIC_RESULT res3 = OrmaDatabase_run_multi_sql(o, (const uint8_t *)sql3);
+printf("STUB: res3: %d\n", res3);
+}
+```
+
 #### Stub C code, some functions explained
+
+helper function csb and csc:<br>
+csb() will build a `csorma_str*` from a `const char*`<br>
+and csc() will append (or create) a `csorma_str*` from a `buffer and length`
+```C
+#define csb(buf)
+#define csc(buf,len)
+```
 
 include the header file:
 ```C
