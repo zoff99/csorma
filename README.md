@@ -83,7 +83,7 @@ STUB: res1: 0
 STUB: all OK
 ```
 
-you now have your working project stub.<br>
+you now have your working C project stub.<br>
 
 #### Add some more SQL stuff to your new project
 
