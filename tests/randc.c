@@ -25,11 +25,7 @@ char* generateRandomString() {
     struct timeval time;
     gettimeofday(&time,NULL);
     // microsecond has 1 000 000
-    // Assuming you did not need quite that accuracy
-    // Also do not assume the system clock has that accuracy.
-    srand((time.tv_sec * 1000) + (time.tv_usec / 1000));
-
-    // srand(time(NULL));
+    srand((time.tv_sec * 1000) + (time.tv_usec / 10));
 
     randomString[0] = charset[rand() % 26]; // First char is a-z
     for (int i = 1; i < 27; i++) {
@@ -43,7 +39,6 @@ char* generateRandomString() {
 
 int main() {
     char* randomChars = generateRandomString();
-    yieldcpu(5);
     printf("%s\n", randomChars);
     free(randomChars);
 
