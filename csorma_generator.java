@@ -176,7 +176,7 @@ public class csorma_generator {
                     new File(workdir + File.separator + out_dir + File.separator + sqlite_src_dir + File.separator + i2));
             }
 
-            String[] list3 = new String[]{"invalid_UTF-8-test.txt","UTF-8-demo.html"};
+            String[] list3 = new String[]{"invalid_UTF-8-test.dat","UTF-8-demo.html"};
             for (String i3 : list3)
             {
                 System.out.println("copying File: " + i3);
