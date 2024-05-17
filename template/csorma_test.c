@@ -24,7 +24,7 @@ pthread_t thr_2;
 int thr_1_stop = 0;
 int thr_2_stop = 0;
 OrmaDatabase *o = NULL;
-char *utf8_test_file_broken1 = "invalid_UTF-8-test.txt";
+char *utf8_test_file_broken1 = "invalid_UTF-8-test.dat";
 char *utf8_test_file2 = "UTF-8-demo.html";
 uint64_t counter1 = 0;
 uint64_t counter2 = 0;
