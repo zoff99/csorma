@@ -27,7 +27,7 @@ https://github.com/zoff99/sorma2
 * NO complex DB operations like JOIN or UNION etc.
 * NO multi column primary keys
 * NO non ASCII characters in table and column names
-* table and column names MUST NOT start or end with a `_` or a number
+* table and column names MUST NOT start or end with a `_` or a `number`
 * table and column names MUST only contain `[a-z][_]` (NO uppercase)
 * if table or column name starts with (or contains) `public` or `static` there could be issues(*)
 
