@@ -17,9 +17,9 @@ extern "C" {
 // ----------- version -----------
 #define CSORMA_VERSION_MAJOR 0
 #define CSORMA_VERSION_MINOR 99
-#define CSORMA_VERSION_PATCH 0
-static const char csorma_global_version_string[] = "0.99.0";
-static const char csorma_global_version_asan_string[] = "0.99.0-ASAN";
+#define CSORMA_VERSION_PATCH 1
+static const char csorma_global_version_string[] = "0.99.1";
+static const char csorma_global_version_asan_string[] = "0.99.1-ASAN";
 
 #define CSORMA__GIT_COMMIT_HASH "00000007"
 // ----------- version -----------
