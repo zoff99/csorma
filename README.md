@@ -31,6 +31,16 @@ https://github.com/zoff99/sorma2
 * table and column names MUST only contain `[a-z][_]` (NO uppercase)
 * if table or column name starts with (or contains) `public` or `static` there could be issues(*)
 
+### Supported architechtures
+* Linux
+* Raspi
+* Windows
+* macOS
+* macOS silicon arm64
+* s390
+* mips
+* riscV
+
 ### Usage
 #### Create your first C project with csorma
 create a directory for your project:
