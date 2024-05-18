@@ -10,7 +10,7 @@ jobs:
   test_linux_big:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-java@v4
         with:
@@ -28,7 +28,7 @@ jobs:
   test_linux:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-java@v4
         with:
@@ -73,7 +73,7 @@ jobs:
   test_macos:
     runs-on: macos-12
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: install deps
         run:  brew install gdb
@@ -124,7 +124,7 @@ jobs:
   test_macos14arm:
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-java@v4
         with:
@@ -172,7 +172,7 @@ jobs:
   test_wine:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: install dependencies
         run: |
