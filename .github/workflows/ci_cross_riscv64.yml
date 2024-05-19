@@ -54,5 +54,5 @@ jobs:
 
       - name: build deps
         run: |
-          ./dockcross-linux-riscv64 bash -c 'cd project/gen/;ls -al;make -j 6 all && make tests;ldd csorma_test||echo "NO ERR";ls -hal csorma_test;./csorma_test'
+          ./dockcross-linux-riscv64 bash -c 'cd project/gen/;ls -al;make -j 6 all && make tests;ldd csorma_example||echo "NO ERR";ls -hal csorma_example;./csorma_example'
 
