@@ -20,7 +20,7 @@ https://github.com/zoff99/sorma2
 * easy to use (for most common SQL operations)
 * no dependencies (other than SQLite3 amalagamtion soure file)
 * works with ASAN
-* <b>sqlcipher</b> encryption option (you need to have openssl and libssl installed)
+* <b>sqlcipher</b> encryption option (you need to have openssl and libssl and libcrypto installed)
 
 ### What is does NOT do
 * NOT optimized for speed
@@ -84,7 +84,7 @@ make csorma_stub
 ./csorma_stub
 ```
 
-if you want to build your project with <b>sqlcipher</b> (you need to have openssl and libssl installed):
+if you want to build your project with <b>sqlcipher</b> (you need to have openssl and libssl and libcrypto installed):
 ```bash
 ENCRYPT_CS=1 make csorma_stub
 ./csorma_stub
