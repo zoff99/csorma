@@ -153,9 +153,12 @@ int main()
     // ----------- initialize DB -----------
 
 #ifdef ENCRYPT_CSORMA
-    const char *key = "passphrase123!";
-    int r = sqlite3_key(o->db, key, strlen(key));
+    printf("TEST: csorma was compiled with sqlcipher encryption\n");
 #endif
+
+    const char *key = "passphrase123!";
+    int r = OrmaDatabase_key(o, (uint8_t*)key, strlen(key));
+    printf("TEST: setting sqlcipher key. result = %d\n", r);
 
     // ----------- freehand SQL -----------
     char *sql1 = "CREATE TABLE IF NOT EXISTS \"Message\" ("
