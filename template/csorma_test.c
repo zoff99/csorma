@@ -152,6 +152,11 @@ int main()
     printf("TEST: database handle: %p\n", (void *)o);
     // ----------- initialize DB -----------
 
+#ifdef ENCRYPT_CSORMA
+    const char *key = "passphrase123!";
+    int r = sqlite3_key(o->db, key, strlen(key));
+#endif
+
     // ----------- freehand SQL -----------
     char *sql1 = "CREATE TABLE IF NOT EXISTS \"Message\" ("
   "\"id\" INTEGER,"

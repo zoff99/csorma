@@ -18,6 +18,9 @@ ASANCFLAGS = -fsanitize=address -fno-omit-frame-pointer -static-libasan
 CFLAGS += -g -O3 -fPIC -Wall -Wextra -Werror=maybe-uninitialized -std=c99 -pedantic -pthread -Isqlite/ -I./
 LIBSSQLITE3 = -lm
 
+CFSQLCIPHER = $(CFLAGS) -DSQLITE_HAS_CODEC -DSQLCIPHER_CRYPTO_OPENSSL -DSQLITE_TEMP_STORE=2
+LBSQLCIPHER = -lm $(shell pkg-config --libs openssl)
+
 # ------------------------------
 #  tests
 # ------------------------------
