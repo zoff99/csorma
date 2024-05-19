@@ -21,13 +21,13 @@ extern "C" {
 // ----------- version -----------
 #define CSORMA_VERSION_MAJOR 0
 #define CSORMA_VERSION_MINOR 99
-#define CSORMA_VERSION_PATCH 1
+#define CSORMA_VERSION_PATCH 2
 #ifdef ENCRYPT_CSORMA
-static const char csorma_global_version_string[] = "0.99.1-SQLCIPHER";
-static const char csorma_global_version_asan_string[] = "0.99.1-SQLCIPHER-ASAN";
+static const char csorma_global_version_string[] = "0.99.2-SQLCIPHER";
+static const char csorma_global_version_asan_string[] = "0.99.2-SQLCIPHER-ASAN";
 #else
-static const char csorma_global_version_string[] = "0.99.1";
-static const char csorma_global_version_asan_string[] = "0.99.1-ASAN";
+static const char csorma_global_version_string[] = "0.99.2";
+static const char csorma_global_version_asan_string[] = "0.99.2-ASAN";
 #endif
 
 #define CSORMA__GIT_COMMIT_HASH "00000108"
