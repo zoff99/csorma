@@ -23,6 +23,7 @@ public class csorma_generator {
     static final String runtime_header_table_in = "_csorma_runtime_table.h";
     static final String makefile = "Makefile";
     static final String sqlite_src_dir = "sqlite/";
+    static final String sqlcipher_src_dir = "sqlcipher/";
     static final String makefile_in = "_Makefile";
     static final String tbl_h_proto = "_table.h";
     static final String tbl_c_proto = "_table.c";
@@ -174,6 +175,18 @@ public class csorma_generator {
                 System.out.println("copying File: " + sqlite_src_dir + File.separator + i2);
                 copy_file(new File(sqlite_src_dir + File.separator + i2),
                     new File(workdir + File.separator + out_dir + File.separator + sqlite_src_dir + File.separator + i2));
+            }
+
+
+            File d5 = new File(workdir + File.separator + out_dir + File.separator + sqlcipher_src_dir);
+            d5.mkdirs();
+
+            String[] list5 = new String[]{"sqlite3.c","sqlite3.h"};
+            for (String i2 : list5)
+            {
+                System.out.println("copying File: " + sqlcipher_src_dir + File.separator + i2);
+                copy_file(new File(sqlcipher_src_dir + File.separator + i2),
+                    new File(workdir + File.separator + out_dir + File.separator + sqlcipher_src_dir + File.separator + i2));
             }
 
             String[] list3 = new String[]{"invalid_UTF-8-test.dat","UTF-8-demo.html"};

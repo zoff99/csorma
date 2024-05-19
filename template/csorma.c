@@ -1,5 +1,9 @@
 
+#ifdef ENCRYPT_CSORMA
+#include "sqlcipher/sqlite3.h"
+#else
 #include "sqlite/sqlite3.h"
+#endif
 #include "csorma.h"
 #include "logger.h"
 
@@ -548,6 +552,16 @@ OrmaDatabase* OrmaDatabase_init(const uint8_t *directory_name, const uint32_t di
     o->user_data = NULL;
 
     return o;
+}
+
+int OrmaDatabase_key(OrmaDatabase *o, const uint8_t *key, const uint32_t key_len)
+{
+#ifdef ENCRYPT_CSORMA
+    int result = sqlite3_key(o->db, key, key_len);
+    return result;
+#else
+    return CSORMA_GENERIC_RESULT_ERROR;
+#endif
 }
 
 void OrmaDatabase_shutdown(OrmaDatabase *o)
