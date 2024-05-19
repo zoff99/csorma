@@ -20,6 +20,7 @@ https://github.com/zoff99/sorma2
 * easy to use (for most common SQL operations)
 * no dependencies (other than SQLite3 amalagamtion soure file)
 * works with ASAN
+* sqlcipher encryption option
 
 ### What is does NOT do
 * NOT optimized for speed
@@ -80,6 +81,12 @@ cd ./mysuperstuff/gen/
 now build your C project stub and run it:
 ```bash
 make csorma_stub
+./csorma_stub
+```
+
+if you want to build your project with sqlcipher:
+```bash
+ENCRYPT_CS=1 make csorma_stub
 ./csorma_stub
 ```
 
