@@ -97,6 +97,7 @@ typedef struct OrmaBindvars {
 
 const char *csorma_get_version();
 const char *csorma_get_sqlite_version();
+const char *csorma_get_sqlcipher_version();
 
 csorma_s *csorma_str2_build(const char *b1);
 csorma_s *csorma_str_build(const char *b1, const uint32_t b1_len);
