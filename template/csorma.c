@@ -560,6 +560,10 @@ int OrmaDatabase_key(OrmaDatabase *o, const uint8_t *key, const uint32_t key_len
     int result = sqlite3_key(o->db, key, key_len);
     return result;
 #else
+    // HINT: to get rid of unused var warning
+    (void)o;
+    (void)key;
+    (void)key_len;
     return CSORMA_GENERIC_RESULT_ERROR;
 #endif
 }
