@@ -14,7 +14,7 @@ ifeq ($(findstring mingw, $(ccmachine)), mingw)
 endif
 
 ASANCFLAGS = -fsanitize=address -fno-omit-frame-pointer -static-libasan
-CFLAGS += -g -O3 -fPIC -Wall -Wextra -Werror=maybe-uninitialized -Wdouble-promotion -std=c99 -pedantic -pthread -I./
+CFLAGS += -g -O3 -fPIC -Wall -Wextra -Werror=maybe-uninitialized -Wdouble-promotion -Wno-unknown-warning-option -std=c99 -pedantic -pthread -I./
 LIBSSQLITE3 = -lm
 
 ifdef ENCRYPT_CS
