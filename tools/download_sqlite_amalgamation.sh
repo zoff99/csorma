@@ -1,6 +1,6 @@
 #! /bin/bash
 
-_SQLITE_VERSION_="3450300"
+_SQLITE_VERSION_="3460000"
 
 amalgamation_url="https://sqlite.org/2024/sqlite-amalgamation-""$_SQLITE_VERSION_"".zip"
 
@@ -13,7 +13,8 @@ export _HOME_
 basedir="$_HOME_""/../"
 cd "$basedir"
 
-wget --continue "$amalgamation_url" -O amalgamation.zip
+rm -f amalgamation.zip
+wget "$amalgamation_url" -O amalgamation.zip
 mkdir "$basedir""/sqlite/"
 cd "$basedir""/sqlite/"
 unzip -j -o "$basedir""/"amalgamation.zip
