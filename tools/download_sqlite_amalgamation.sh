@@ -1,6 +1,8 @@
 #! /bin/bash
 
-amalgamation_url="https://sqlite.org/2024/sqlite-amalgamation-3450300.zip"
+_SQLITE_VERSION_="3450300"
+
+amalgamation_url="https://sqlite.org/2024/sqlite-amalgamation-""$_SQLITE_VERSION_"".zip"
 
 
 _HOME2_=$(dirname $0)
