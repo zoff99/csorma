@@ -20,6 +20,8 @@ https://github.com/zoff99/sorma2
 * easy to use (for most common SQL operations)
 * no dependencies (other than SQLite3 amalagamtion soure file)
 * works with ASAN
+* works with TSAN
+* works with UBSAN
 * <b>sqlcipher</b> encryption option (you need to have openssl and libssl and libcrypto installed)
 
 ### What is does NOT do
