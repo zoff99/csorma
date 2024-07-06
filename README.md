@@ -71,7 +71,7 @@ public class Person
 }
 ```
 
-now create the sources with the generator. you need at least java 17.<br>
+now create the sources with the generator. <b>you need at least java 17</b>.<br>
 ```bash
 javac csorma_generator.java && java csorma_generator ./mysuperstuff/
 ```
