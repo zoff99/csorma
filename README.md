@@ -91,6 +91,7 @@ make csorma_stub
 
 if you want to build your project with <b>sqlcipher</b> (you need to have openssl and libssl and libcrypto installed):
 ```bash
+make clean # clean from the previous build
 ENCRYPT_CS=1 make csorma_stub
 ./csorma_stub
 ```
