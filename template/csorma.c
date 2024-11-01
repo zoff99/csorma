@@ -1,8 +1,8 @@
 
 #ifdef ENCRYPT_CSORMA
-#include "sqlcipher/sqlite3.h"
+# include "sqlcipher/sqlite3.h"
 #else
-#include "sqlite/sqlite3.h"
+# include "sqlite/sqlite3.h"
 #endif
 #include "csorma.h"
 #include "logger.h"
