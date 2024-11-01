@@ -634,7 +634,9 @@ const char *csorma_get_sqlcipher_version(void)
 #ifdef ENCRYPT_CSORMA
     // TODO: have not found a way to get the version per function call. without crash or using `free` somewhere.
     //       so this is now updated by hand.
-    return "4.6.0"; // DO NOT REMOVE THIS: 0x0ffca123459837347ca6c5a8
+
+    // !! the hex code in the next line is used by the 'download_sqlcipher_amalgamation.sh' to find this line and update the version string !!
+    return "4.6.1 community"; // DO NOT REMOVE THIS: 0x0ffca123459837347ca6c5a8
 #else
     return "0.0.0";
 #endif
