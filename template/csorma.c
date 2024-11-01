@@ -99,6 +99,8 @@ csorma_s *csorma_str_int32t(csorma_s *out, const int32_t append_i)
     //       we use 15 just in case
     const int max_int32_char_len = 15;
     char s[max_int32_char_len + 1];
+    // clear 's' with NULL bytes
+    memset(s, 0, (max_int32_char_len + 1));
     snprintf(s, max_int32_char_len, "%d", append_i);
     csorma_s *result = csorma_str_con(out, (const char *)s, strlen(s));
     return result;
