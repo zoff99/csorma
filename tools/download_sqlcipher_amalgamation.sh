@@ -8,8 +8,6 @@ export _HOME2_
 _HOME_=$(cd $_HOME2_;pwd)
 export _HOME_
 
-set -x
-
 basedir="$_HOME_""/../"
 cd "$basedir"
 
