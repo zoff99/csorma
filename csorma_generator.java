@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 public class csorma_generator {
     private static final String TAG = "Generator";
-    static final String Version = "0.99.2";
+    static final String Version = "0.99.3";
     static final String out_dir = "gen/";
     static final String prefix = "_csorma_";
     static final String in_suffix = ".java";
@@ -849,7 +849,7 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Set(__@@@TABLE@@@__* t, __@@@CTYPE
     static void add_equal_func03(final String table_name, final String column_name,
             final COLTYPE ctype, final String ctype_firstupper)
     {
-        String[] list = new String[]{"Eq","NotEq","Lt","Le","Gt","Ge"};
+        String[] list = new String[]{"Eq","NotEq","Lt","Le","Gt","Ge","Null","NotNull"};
         for (String cmp_str : list)
         {
             if ((ctype == COLTYPE.INT)||(ctype == COLTYPE.LONG)||(ctype == COLTYPE.BOOLEAN))
@@ -958,6 +958,22 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__NotLike(__@@@TABLE@@@__ *t, csorma
 }
 """;
 
+String _f_null = """
+static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Null(__@@@TABLE@@@__ *t, csorma_s * __@@@COLUMN_NAME@@@__)
+{
+    add_to_where_sql_string(t->sql_where, "and \\"__@@@COLUMN_NAME@@@__\\" IS NULL");
+    return t;
+}
+""";
+
+String _f_notnull = """
+static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__NotNull(__@@@TABLE@@@__ *t, csorma_s * __@@@COLUMN_NAME@@@__)
+{
+    add_to_where_sql_string(t->sql_where, "and \\"__@@@COLUMN_NAME@@@__\\" IS NOT NULL");
+    return t;
+}
+""";
+
 String _f_orderbyasc = """
 static __@@@TABLE@@@__ *_orderBy__@@@COLUMN_NAME@@@__Asc(__@@@TABLE@@@__ *t)
 {
@@ -982,6 +998,8 @@ static __@@@TABLE@@@__ *_orderBy__@@@COLUMN_NAME@@@__Desc(__@@@TABLE@@@__ *t)
         tbl_equalfuncs_2  += r_(_f_ge, table_name, column_name, ctype);
         tbl_equalfuncs_2  += r_(_f_like, table_name, column_name, ctype);
         tbl_equalfuncs_2  += r_(_f_notlike, table_name, column_name, ctype);
+        tbl_equalfuncs_2  += r_(_f_null, table_name, column_name, ctype);
+        tbl_equalfuncs_2  += r_(_f_notnull, table_name, column_name, ctype);
         tbl_equalfuncs_2  += r_(_f_orderbyasc, table_name, column_name, ctype);
         tbl_equalfuncs_2  += r_(_f_orderbydesc, table_name, column_name, ctype);
     }
@@ -1019,6 +1037,11 @@ static __@@@TABLE@@@__ *_orderBy__@@@COLUMN_NAME@@@__Desc(__@@@TABLE@@@__ *t)
             tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Ge)(" + table_name + " *t, " +
                 ctype.ctype + " " + lc(column_name) + ");" + "\n";
         }
+
+        tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Null)(" + table_name + " *t, " +
+            "csorma_s *" + " " + lc(column_name) + ");" + "\n";
+        tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "NotNull)(" + table_name + " *t, " +
+            "csorma_s *" + " " + lc(column_name) + ");" + "\n";
 
         tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Like)(" + table_name + " *t, " +
             "csorma_s *" + " " + lc(column_name) + ");" + "\n";
