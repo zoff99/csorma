@@ -849,7 +849,7 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Set(__@@@TABLE@@@__* t, __@@@CTYPE
     static void add_equal_func03(final String table_name, final String column_name,
             final COLTYPE ctype, final String ctype_firstupper)
     {
-        String[] list = new String[]{"Eq","NotEq","Lt","Le","Gt","Ge","Null","NotNull"};
+        String[] list = new String[]{"Eq","NotEq","Lt","Le","Gt","Ge"};
         for (String cmp_str : list)
         {
             if ((ctype == COLTYPE.INT)||(ctype == COLTYPE.LONG)||(ctype == COLTYPE.BOOLEAN))
@@ -874,6 +874,15 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Set(__@@@TABLE@@@__* t, __@@@CTYPE
             // like and notlike always requires a string argument
             tbl_equalfuncs_3  += "    " + table_name + "* (*_FuncPtr0020_"+cmp_str+"" + lc(column_name) +
                 ") (" + table_name + "*, " + "csorma_s *" + ");\n";
+            tbl_equalfuncs_3  += "    " + "_FuncPtr0020_"+cmp_str+"" + lc(column_name) + " = &_" + lc(column_name) + ""+cmp_str+";" + "\n";
+            tbl_equalfuncs_3  += "    " + "t->" + lc(column_name) + ""+cmp_str+" = _FuncPtr0020_"+cmp_str+"" + lc(column_name)  + ";\n";
+        }
+
+        String[] list3 = new String[]{"Null","NotNull"};
+        for (String cmp_str : list3)
+        {
+            tbl_equalfuncs_3  += "    " + table_name + "* (*_FuncPtr0020_"+cmp_str+"" + lc(column_name) +
+                ") (" + table_name + "*);\n";
             tbl_equalfuncs_3  += "    " + "_FuncPtr0020_"+cmp_str+"" + lc(column_name) + " = &_" + lc(column_name) + ""+cmp_str+";" + "\n";
             tbl_equalfuncs_3  += "    " + "t->" + lc(column_name) + ""+cmp_str+" = _FuncPtr0020_"+cmp_str+"" + lc(column_name)  + ";\n";
         }
@@ -959,7 +968,7 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__NotLike(__@@@TABLE@@@__ *t, csorma
 """;
 
 String _f_null = """
-static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Null(__@@@TABLE@@@__ *t, csorma_s * __@@@COLUMN_NAME@@@__)
+static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Null(__@@@TABLE@@@__ *t)
 {
     add_to_where_sql_string(t->sql_where, "and \\"__@@@COLUMN_NAME@@@__\\" IS NULL");
     return t;
@@ -967,7 +976,7 @@ static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__Null(__@@@TABLE@@@__ *t, csorma_s 
 """;
 
 String _f_notnull = """
-static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__NotNull(__@@@TABLE@@@__ *t, csorma_s * __@@@COLUMN_NAME@@@__)
+static __@@@TABLE@@@__ *___@@@COLUMN_NAME@@@__NotNull(__@@@TABLE@@@__ *t)
 {
     add_to_where_sql_string(t->sql_where, "and \\"__@@@COLUMN_NAME@@@__\\" IS NOT NULL");
     return t;
@@ -1038,10 +1047,8 @@ static __@@@TABLE@@@__ *_orderBy__@@@COLUMN_NAME@@@__Desc(__@@@TABLE@@@__ *t)
                 ctype.ctype + " " + lc(column_name) + ");" + "\n";
         }
 
-        tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Null)(" + table_name + " *t, " +
-            "csorma_s *" + " " + lc(column_name) + ");" + "\n";
-        tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "NotNull)(" + table_name + " *t, " +
-            "csorma_s *" + " " + lc(column_name) + ");" + "\n";
+        tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Null)(" + table_name + " *t);" + "\n";
+        tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "NotNull)(" + table_name + " *t);" + "\n";
 
         tbl_equalfuncs  += "    " + table_name + "* (*" + lc(column_name) + "Like)(" + table_name + " *t, " +
             "csorma_s *" + " " + lc(column_name) + ");" + "\n";
