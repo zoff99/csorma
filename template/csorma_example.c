@@ -1,4 +1,5 @@
 #include "csorma_runtime.h"
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -395,6 +396,70 @@ char *sql2 = "CREATE TABLE IF NOT EXISTS \"Friendlist\" ("
     printf("===================================\n");
     // ----------- insert large buffer with random bytes -----------
 
+
+    // ----------- NULL tests -----------
+    {
+        char *sql3 = "CREATE TABLE IF NOT EXISTS \"Xx1\" ("
+        "  \"pid\" INTEGER,"
+        "  \"txt1\" TEXT,"
+        "  \"int1\" INTEGER,"
+        "  \"bool1\" BOOLEAN,"
+        "  PRIMARY KEY(\"pid\" AUTOINCREMENT)"
+        ");"
+        "insert into XX1(txt1) values('AAAAAA');"
+        "insert into XX1(txt1,bool1) values('true_','1');"
+        "insert into XX1(txt1) values(NULL);";
+        CSORMA_GENERIC_RESULT res3 = OrmaDatabase_run_multi_sql(o, (const uint8_t *)sql3);
+        printf("TEST: res_fh01: %d\n", res3);
+    }
+    {
+    Xx1 *mx1 = orma_selectFromXx1(o->db);
+    Xx1List *ml6 = mx1->toList(mx1);
+    printf("TEST: ml7->items=%ld\n", ml6->items);
+    Xx1 **md6 = ml6->l;
+    for(int i=0;i<ml6->items;i++)
+    {
+        printf("+++++++++++++++++++++++++\n");
+        printf("TEST: pid=%ld\n", (*md6)->pid);
+        printf("TEST: int1=%d\n", (*md6)->int1);
+        printf("TEST: bool1=\"%d\"\n", (*md6)->bool1);
+        printf("TEST: txt1=\"%s\"\n", (*md6)->txt1->s);
+        printf("TEST: txt1 bytes=\"%d\"\n", (*md6)->txt1->l);
+        printf("TEST: txt1 null term=\"%d\"\n", (*md6)->txt1->n);
+        printf("+++++++++++++++++++++++++\n");
+
+        if ((*md6)->pid == 1)
+        {
+            assert((*md6)->int1==0);
+            assert((*md6)->bool1==0);
+            assert((*md6)->txt1->l==6);
+            assert((*md6)->txt1->n==1);
+        }
+        else if ((*md6)->pid == 2)
+        {
+            assert((*md6)->int1==0);
+            assert((*md6)->bool1==1);
+            assert((*md6)->txt1->l==5);
+            assert((*md6)->txt1->n==1);
+        }
+        else if ((*md6)->pid == 3)
+        {
+            assert((*md6)->int1==0);
+            assert((*md6)->bool1==0);
+            assert((*md6)->txt1->l==0);
+            assert((*md6)->txt1->n==1);
+        }
+
+        md6++;
+    }
+    orma_free_Xx1List(ml6);
+    }
+    {
+        char *sql3 = "DROP TABLE XX1;";
+        CSORMA_GENERIC_RESULT res3 = OrmaDatabase_run_multi_sql(o, (const uint8_t *)sql3);
+        printf("TEST: res_fh02: %d\n", res3);
+    }
+    // ----------- NULL tests -----------
 
 
     // ----------- freehand SQL -----------
