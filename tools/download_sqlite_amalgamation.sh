@@ -2,7 +2,7 @@
 
 _SQLITE_VERSION_="3480000"
 
-amalgamation_url="https://sqlite.org/2024/sqlite-amalgamation-""$_SQLITE_VERSION_"".zip"
+amalgamation_url="https://sqlite.org/2025/sqlite-amalgamation-""$_SQLITE_VERSION_"".zip"
 
 
 _HOME2_=$(dirname $0)
