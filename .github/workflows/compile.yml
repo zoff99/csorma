@@ -35,6 +35,9 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: arch
+        run: uname -a
+
       - name: java-version
         run: java -version
 
@@ -143,6 +146,9 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+
+      - name: arch
+        run: uname -a
 
       - name: java-version
         run: java -version
