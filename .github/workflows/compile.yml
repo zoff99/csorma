@@ -167,7 +167,14 @@ jobs:
       - name: make image of python console output
         run: |
           cd project/gen/
+          pwd
+          ls -al
+          set -x
           cat out.txt | convert -trim -border 20 -bordercolor black +repage -background black -fill '#00cc00' -pointsize 18 TEXT:- ../../console_01_screen.png
+
+      - name: make image of python console output
+        run: |
+          ls -rattl
 
       - name: Upload to nightly release
         uses: ncipollo/release-action@v1
