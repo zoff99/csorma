@@ -280,9 +280,7 @@ sqlcipher source code is generated from latest [sqlcipher git repository](https:
 you can download the generated sqlcipher code from https://github.com/zoff99/gen_sqlcipher_amalgamation/releases/tag/nightly
 
 ### Automated Screenshots taken from CI
-<img src="https://github.com/zoff99/csorma/releases/download/nightly/console_01_screen-0.png" width="300"></a>
-<img src="https://github.com/zoff99/csorma/releases/download/nightly/console_01_screen-39.png" width="300"></a>
-<img src="https://github.com/zoff99/csorma/releases/download/nightly/console_01_screen-40.png" width="300">
+<img src="https://github.com/zoff99/csorma/releases/download/nightly/console_01_screen-0.png" width="300">
 <br>
 
 <br>
