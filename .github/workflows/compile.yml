@@ -167,13 +167,11 @@ jobs:
       - name: make image of python console output
         run: |
           cd project/gen/
-          pwd
-          ls -al
-          set -x
-          cat out.txt | convert -trim -border 20 -bordercolor black +repage -background black -fill '#00cc00' -pointsize 18 TEXT:- ../../console_01_screen.png
+          cat out.txt | convert -trim -border 20 -bordercolor black +repage -background black -fill '#00cc00' -pointsize 14 TEXT:- ../../console_01_screen.png
 
-      - name: make image of python console output
+      - name: show image file names
         run: |
+          cd project/gen/
           ls -rattl
 
       - name: Upload to nightly release
@@ -187,7 +185,7 @@ jobs:
           prerelease: true
           replacesArtifacts: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          artifacts: "console_01_screen.png"
+          artifacts: "console_01_screen-*.png"
 
   test_linux_asan_arm:
     runs-on: ubuntu-22.04-arm
