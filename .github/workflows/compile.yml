@@ -6,6 +6,16 @@ on:
 
 jobs:
 
+  update-nightly-tag:
+    name: Update nightly release tag
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    permissions:
+        contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Move nightly tag to head for nightly release
+        run: git tag -f nightly && git push origin nightly -f
 
   test_linux_big:
     runs-on: ubuntu-22.04
@@ -94,6 +104,11 @@ jobs:
 
   test_linux_asan:
     runs-on: ubuntu-22.04
+    needs: [update-nightly-tag]
+    if: |
+      always() &&
+      (needs.update-nightly-tag.result == 'success' ||
+        needs.update-nightly-tag.result == 'skipped')
     permissions:
       contents: write
     steps:
