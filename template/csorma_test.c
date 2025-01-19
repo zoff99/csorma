@@ -169,6 +169,12 @@ int main()
     int r = OrmaDatabase_key(o, (uint8_t*)key, strlen(key));
     printf("TEST: setting sqlcipher key. result = %d\n", r);
 
+    {
+        char *sql1 = "PRAGMA journal_mode = WAL;";
+        CSORMA_GENERIC_RESULT res1 = OrmaDatabase_run_multi_sql(o, (const uint8_t *)sql1);
+        printf("TEST: activate WAL mode: %d\n", res1);
+    }
+
     // ----------- freehand SQL -----------
     char *sql1 = "CREATE TABLE IF NOT EXISTS \"Message\" ("
   "\"id\" INTEGER,"
