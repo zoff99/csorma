@@ -43,9 +43,8 @@ int main()
     printf("TEST: setting sqlcipher key. result = %d\n", r);
 
     {
-        char *sql1 = "PRAGMA journal_mode = WAL;";
-        CSORMA_GENERIC_RESULT res1 = OrmaDatabase_run_multi_sql(o, (const uint8_t *)sql1);
-        printf("TEST: activate WAL mode: %d\n", res1);
+        CSORMA_GENERIC_RESULT res1 = OrmaDatabase_set_wal_mode(o, true);
+        printf("TEST: activating WAL mode. result = %d\n", (int)res1);
     }
 
     // ----------- freehand SQL to create TABLE -----------
