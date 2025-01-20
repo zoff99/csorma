@@ -170,7 +170,7 @@ int main()
     printf("TEST: setting sqlcipher key. result = %d\n", r);
 
     {
-        CSORMA_GENERIC_RESULT UNUSED(res1) = OrmaDatabase_set_wal_mode(o, true);
+        CSORMA_GENERIC_RESULT res1 = OrmaDatabase_set_wal_mode(o, true);
         printf("TEST: activating WAL mode. result = %d\n", (int)res1);
     }
 
