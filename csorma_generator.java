@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 public class csorma_generator {
     private static final String TAG = "Generator";
-    static final String Version = "0.99.3";
+    static final String Version = "0.99.4";
     static final String out_dir = "gen/";
     static final String prefix = "_csorma_";
     static final String in_suffix = ".java";
@@ -147,7 +147,11 @@ public class csorma_generator {
             final String workdir = args[0];
             begin_csorma(workdir);
 
-            for (final File fileEntry : new File(workdir).listFiles()) {
+            // HINT: sort order does not seem to be exactly identical everywhere. this is the aweful "fix" with sorting
+            File[] files = new File(workdir).listFiles();
+            Arrays.sort(files, (a, b) -> a.getName().compareTo(b.getName()));
+
+            for (final File fileEntry : files) {
                 if (!fileEntry.isDirectory()) {
                     if (fileEntry.getName().startsWith(prefix))
                     {
