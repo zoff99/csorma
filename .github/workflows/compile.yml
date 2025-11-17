@@ -102,6 +102,11 @@ jobs:
           cd project/gen/
           ./csorma_test
 
+      - name: show beginning of the DB file
+        run: |
+          cd project/gen/
+          cat test.db|hexdump -C|head -24
+
       - name: check if DB is really encrypted
         run: |
           cd project/gen/
