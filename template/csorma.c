@@ -55,6 +55,15 @@ csorma_s *csorma_str2_build(const char *b1)
 
 csorma_s *csorma_str_build(const char *b1, const uint32_t b1_len)
 {
+    // FIX: guard against NULL b1.
+    // memcpy(out->s, NULL, n) with n > 0 is undefined behavior and
+    // causes a segfault. Return NULL to indicate failure, matching
+    // the behavior of csorma_str2_build(NULL).
+    if (b1 == NULL)
+    {
+        return NULL;
+    }
+
     csorma_s *out = calloc(1, sizeof(csorma_s));
     out->s = calloc(1, b1_len + 1);
     if (out == NULL)
@@ -112,6 +121,15 @@ csorma_s *csorma_str_con(csorma_s *out, const char *b1, const uint32_t b1_len)
     if (out == NULL)
     {
         out = calloc(1, sizeof(csorma_s));
+    }
+
+    // FIX: guard against NULL b1.
+    // memcpy(dst, NULL, n) with n > 0 is undefined behavior and
+    // causes a segfault. If b1 is NULL there is nothing to append,
+    // so return the string unchanged.
+    if (b1 == NULL)
+    {
+        return out;
     }
 
     out->s = realloc(out->s, out->l + b1_len + 1);
