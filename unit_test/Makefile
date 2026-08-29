@@ -11,7 +11,10 @@
 #   make test_db        - database operation tests
 #   make test_schema    - schema upgrade tests
 #   make test_resultset - result set tests
+#   make test_thread    - threading / concurrency tests
 #   make asan_all       - all tests with AddressSanitizer
+#   make tsan_all       - all tests with ThreadSanitizer
+#   make ubsan_all      - all tests with UBSanitizer
 #   make clean          - remove generated files
 #
 
@@ -34,7 +37,7 @@ CSORMA_H   := $(TEMPLATE_DIR)/csorma.h
 LOGGER_C   := $(TEMPLATE_DIR)/logger.c
 LOGGER_H   := $(TEMPLATE_DIR)/logger.h
 
-.PHONY: all test_all test_str test_bind test_db test_schema test_resultset \
+.PHONY: all test_all test_str test_bind test_db test_schema test_resultset test_thread \
         asan_all tsan_all ubsan_all clean objs
 
 all: test_all
@@ -99,6 +102,12 @@ $(BIN_DIR)/test_resultset: test_resultset.c objs | $(BIN_DIR)
 		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
 		-o $@ -lm -pthread
 
+$(BIN_DIR)/test_threading: test_threading.c objs | $(BIN_DIR)
+	@echo "=== Building test_threading ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ -lm -pthread
+
 # ============================================================
 #  Run targets
 # ============================================================
@@ -137,16 +146,34 @@ test_resultset: $(BIN_DIR)/test_resultset
 	@echo "============================================================"
 	./$(BIN_DIR)/test_resultset
 
-test_all:
-	@$(MAKE) test_str
-	@$(MAKE) test_bind
-	@$(MAKE) test_db
-	@$(MAKE) test_schema
-	@$(MAKE) test_resultset
+test_thread: $(BIN_DIR)/test_threading
 	@echo ""
 	@echo "============================================================"
-	@echo "  ALL TEST SUITES COMPLETE"
+	@echo "  Running: Threading / Concurrency Tests"
 	@echo "============================================================"
+	./$(BIN_DIR)/test_threading
+
+test_all:
+	@echo ""
+	@echo "============================================================"
+	@echo "  RUNNING ALL TEST SUITES"
+	@echo "============================================================"
+	@FAILURES=0; \
+	$(MAKE) test_str       || FAILURES=$$((FAILURES+1)); \
+	$(MAKE) test_bind      || FAILURES=$$((FAILURES+1)); \
+	$(MAKE) test_db        || FAILURES=$$((FAILURES+1)); \
+	$(MAKE) test_schema    || FAILURES=$$((FAILURES+1)); \
+	$(MAKE) test_resultset || FAILURES=$$((FAILURES+1)); \
+	$(MAKE) test_thread    || FAILURES=$$((FAILURES+1)); \
+	echo ""; \
+	echo "============================================================"; \
+	if [ $$FAILURES -eq 0 ]; then \
+		echo "  ALL 6 TEST SUITES PASSED"; \
+	else \
+		echo "  $$FAILURES TEST SUITE(S) FAILED"; \
+	fi; \
+	echo "============================================================"; \
+	exit $$FAILURES
 
 # ============================================================
 #  Sanitized builds
