@@ -118,7 +118,8 @@ csorma_s *csorma_str_con(csorma_s *out, const char *b1, const uint32_t b1_len)
     if (out->s == NULL)
     {
         // HINT: what to do here?? FIX ME
-        CSORMA_LOGGER_ERROR("!! PANIC !!");
+        CSORMA_LOGGER_ERROR("!! PANIC !! realloc failed, returning original data !!");
+        return out;  /* original data preserved */
     }
     // HINT: set the "current" end position
     out->cur = out->s + out->l;
@@ -130,7 +131,7 @@ csorma_s *csorma_str_con(csorma_s *out, const char *b1, const uint32_t b1_len)
     // HINT: set the new length (this is without NULL terminator)
     out->l = out->l + b1_len;
     // HINT: set the new "current" end position
-    out->cur = out->cur + out->l;
+    out->cur = out->cur + b1_len;
     // HINT: we have a NULL terminator at the end of the new string
     out->n = 1;
     return out;
