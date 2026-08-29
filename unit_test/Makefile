@@ -18,6 +18,8 @@
 #   make test_clauses   - SQL clause building tests
 #   make test_column    - column lookup tests (rs_find_column_idx)
 #   make test_logger    - logger edge case tests
+#   make test_busy      - SQLITE_BUSY handling tests
+#   make test_leaks     - memory leak lifecycle tests
 #   make asan_all       - all tests with AddressSanitizer
 #   make tsan_all       - all tests with ThreadSanitizer
 #   make ubsan_all      - all tests with UBSanitizer
@@ -50,7 +52,7 @@ LOGGER_H   := $(TEMPLATE_DIR)/logger.h
 
 # Phony targets: these are always considered out-of-date
 .PHONY: all test_all test_str test_bind test_db test_schema test_resultset \
-        test_thread test_clauses test_column test_logger \
+        test_thread test_clauses test_column test_logger test_busy test_leaks \
         asan_all tsan_all ubsan_all clean objs
 
 # Default target
@@ -173,6 +175,22 @@ $(BIN_DIR)/test_logger: test_logger.c objs | $(BIN_DIR)
 		-o $@ -lm -pthread
 	@echo "  -> $@"
 
+# --- SQLITE_BUSY handling tests ---
+$(BIN_DIR)/test_busy: test_busy.c objs | $(BIN_DIR)
+	@echo "=== Building test_busy ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ -lm -pthread
+	@echo "  -> $@"
+
+# --- Memory leak lifecycle tests ---
+$(BIN_DIR)/test_leaks: test_leaks.c objs | $(BIN_DIR)
+	@echo "=== Building test_leaks ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ -lm -pthread
+	@echo "  -> $@"
+
 # ============================================================
 #  Run targets
 #
@@ -243,6 +261,20 @@ test_logger: $(BIN_DIR)/test_logger
 	@echo "============================================================"
 	./$(BIN_DIR)/test_logger
 
+test_busy: $(BIN_DIR)/test_busy
+	@echo ""
+	@echo "============================================================"
+	@echo "  Running: SQLITE_BUSY Handling Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_busy
+
+test_leaks: $(BIN_DIR)/test_leaks
+	@echo ""
+	@echo "============================================================"
+	@echo "  Running: Memory Leak Lifecycle Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_leaks
+
 # ============================================================
 #  Run ALL tests
 #
@@ -265,10 +297,12 @@ test_all:
 	$(MAKE) test_clauses     || FAILURES=$$((FAILURES+1)); \
 	$(MAKE) test_column      || FAILURES=$$((FAILURES+1)); \
 	$(MAKE) test_logger      || FAILURES=$$((FAILURES+1)); \
+	$(MAKE) test_busy        || FAILURES=$$((FAILURES+1)); \
+	$(MAKE) test_leaks       || FAILURES=$$((FAILURES+1)); \
 	echo ""; \
 	echo "============================================================"; \
 	if [ $$FAILURES -eq 0 ]; then \
-		echo "  ALL 9 TEST SUITES PASSED"; \
+		echo "  ALL 11 TEST SUITES PASSED"; \
 	else \
 		echo "  $$FAILURES TEST SUITE(S) FAILED"; \
 	fi; \
@@ -307,4 +341,5 @@ ubsan_all: clean
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
 	rm -f *.db *.db-journal *.db-wal *.db-shm
+	rm -f /tmp/_csorma_busy_test.db*
 	@echo "Cleaned."
