@@ -5,7 +5,7 @@
  *   - Empty format string
  *   - Very long messages (>2048 buffer)
  *   - Format specifiers in data
- *   - NULL file/func pointers
+ *   - NULL file/func pointers (uses fork to detect crash safely)
  *   - All log levels
  *   - Rapid concurrent logging
  *
@@ -19,6 +19,8 @@
 
 #include <pthread.h>
 #include <stdatomic.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 /* ============================================================
  *  Basic logging tests (verify no crash)
@@ -26,7 +28,6 @@
 
 static bool t_log_all_levels(void)
 {
-    /* Call each level directly — should not crash */
     csorma_logger_write(CSORMA_LOGGER_LEVEL_TRACE,   __FILE__, __LINE__, __func__, "trace msg");
     csorma_logger_write(CSORMA_LOGGER_LEVEL_DEBUG,   __FILE__, __LINE__, __func__, "debug msg");
     csorma_logger_write(CSORMA_LOGGER_LEVEL_INFO,    __FILE__, __LINE__, __func__, "info msg");
@@ -62,26 +63,26 @@ static bool t_log_with_string_args(void)
 }
 
 /* ============================================================
- *  Edge cases
+ *  Buffer overflow edge cases
  * ============================================================ */
 
 static bool t_log_very_long_message(void)
 {
     /* Buffer is CSORMA_LOGGER_MAX_MSG_LEN (2048).
-     * Test with a message that exceeds this. */
+     * Test with a message that exceeds this. vsnprintf should
+     * truncate safely, not overflow. */
     char long_msg[4096];
     memset(long_msg, 'A', sizeof(long_msg) - 1);
     long_msg[sizeof(long_msg) - 1] = '\0';
 
     csorma_logger_write(CSORMA_LOGGER_LEVEL_INFO, __FILE__, __LINE__, __func__,
                         "%s", long_msg);
-    /* Should truncate, not overflow */
     return true;
 }
 
 static bool t_log_exactly_buffer_size(void)
 {
-    /* Exactly 2047 chars + NUL = 2048 */
+    /* Exactly 2047 chars + NUL = 2048 (fills buffer completely) */
     char msg[2048];
     memset(msg, 'B', 2047);
     msg[2047] = '\0';
@@ -93,7 +94,7 @@ static bool t_log_exactly_buffer_size(void)
 
 static bool t_log_one_over_buffer(void)
 {
-    /* 2048 chars + NUL = 2049 (one over) */
+    /* 2048 chars + NUL = 2049 (one byte over buffer) */
     char msg[2049];
     memset(msg, 'C', 2048);
     msg[2048] = '\0';
@@ -103,10 +104,14 @@ static bool t_log_one_over_buffer(void)
     return true;
 }
 
+/* ============================================================
+ *  Format string safety
+ * ============================================================ */
+
 static bool t_log_format_specifiers_in_data(void)
 {
     /* Data contains format specifiers — should NOT be interpreted
-     * because they're passed as %s arguments, not as the format string */
+     * because they're passed as %s arguments, not as the format. */
     const char *dangerous = "%s%s%s%s%s%n%n%n%d%d%d";
     csorma_logger_write(CSORMA_LOGGER_LEVEL_INFO, __FILE__, __LINE__, __func__,
                         "data=%s", dangerous);
@@ -115,35 +120,130 @@ static bool t_log_format_specifiers_in_data(void)
 
 static bool t_log_format_string_with_percent(void)
 {
-    /* Format string with literal percent */
+    /* Format string with literal percent sign */
     csorma_logger_write(CSORMA_LOGGER_LEVEL_INFO, __FILE__, __LINE__, __func__,
                         "100%% complete");
     return true;
 }
 
+/* ============================================================
+ *  NULL pointer handling
+ *
+ *  The logger does: strrchr(file, '/') and fprintf(..., file, func, ...)
+ *  If file or func is NULL, this is undefined behavior and will
+ *  segfault on most platforms.
+ *
+ *  We use fork() to safely detect the crash without killing the
+ *  test suite. If the child process dies, we know the bug exists.
+ * ============================================================ */
+
+/* Helper: run a function in a forked child process.
+ * Returns true if child survived, false if it crashed. */
+static bool _run_in_child(void (*fn)(void))
+{
+    fflush(stdout);
+    fflush(stderr);
+    pid_t pid = fork();
+    if (pid < 0) {
+        return true; /* fork failed, skip */
+    }
+    if (pid == 0) {
+        /* Child: run the dangerous function */
+        freopen("/dev/null", "w", stderr);
+        fn();
+        _exit(0);
+    }
+    /* Parent: wait for child */
+    int status;
+    waitpid(pid, &status, 0);
+    if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+        return true;
+    }
+    return false; /* child crashed */
+}
+
+static void _log_null_file_fn(void)
+{
+    csorma_logger_write(CSORMA_LOGGER_LEVEL_INFO, NULL, __LINE__, __func__, "null file");
+}
+
+static void _log_null_func_fn(void)
+{
+    csorma_logger_write(CSORMA_LOGGER_LEVEL_INFO, __FILE__, __LINE__, NULL, "null func");
+}
+
+static void _log_null_both_fn(void)
+{
+    csorma_logger_write(CSORMA_LOGGER_LEVEL_INFO, NULL, 0, NULL, "both null");
+}
+
 static bool t_log_null_file(void)
 {
-    /* NULL file pointer — tests strrchr(NULL, '/') handling */
-    csorma_logger_write(CSORMA_LOGGER_LEVEL_INFO, NULL, __LINE__, __func__, "null file");
+    bool survived = _run_in_child(_log_null_file_fn);
+    if (!survived) {
+        printf(C_RED "\n");
+        printf("  +-----------------------------------------------------------+\n");
+        printf("  |  BUG: Logger crashes on NULL file pointer                 |\n");
+        printf("  +-----------------------------------------------------------+\n");
+        printf("  |                                                           |\n");
+        printf("  |  csorma_logger_write(level, NULL, line, func, msg)        |\n");
+        printf("  |                                                           |\n");
+        printf("  |  ROOT CAUSE in logger.c:                                  |\n");
+        printf("  |    const char *filename = strrchr(file, '/');             |\n");
+        printf("  |                                                           |\n");
+        printf("  |  strrchr(NULL, '/') is undefined behavior -> SEGFAULT     |\n");
+        printf("  |                                                           |\n");
+        printf("  |  FIX: add NULL check before strrchr:                      |\n");
+        printf("  |    if (file == NULL) file = \"<unknown>\";                 |\n");
+        printf("  +-----------------------------------------------------------+\n");
+        printf(C_RESET "\n");
+        _tf_failed++;
+        return false;
+    }
     return true;
 }
 
 static bool t_log_null_func(void)
 {
-    csorma_logger_write(CSORMA_LOGGER_LEVEL_INFO, __FILE__, __LINE__, NULL, "null func");
+    bool survived = _run_in_child(_log_null_func_fn);
+    if (!survived) {
+        printf(C_RED "\n");
+        printf("  +-----------------------------------------------------------+\n");
+        printf("  |  BUG: Logger crashes on NULL func pointer                 |\n");
+        printf("  +-----------------------------------------------------------+\n");
+        printf("  |                                                           |\n");
+        printf("  |  fprintf(stderr, \"...%%s...\", func) with func=NULL        |\n");
+        printf("  |  is undefined behavior on some platforms.                 |\n");
+        printf("  |                                                           |\n");
+        printf("  |  FIX: add NULL check:                                     |\n");
+        printf("  |    if (func == NULL) func = \"<unknown>\";                 |\n");
+        printf("  +-----------------------------------------------------------+\n");
+        printf(C_RESET "\n");
+        _tf_failed++;
+        return false;
+    }
     return true;
 }
 
 static bool t_log_null_file_and_func(void)
 {
-    csorma_logger_write(CSORMA_LOGGER_LEVEL_INFO, NULL, 0, NULL, "both null");
+    bool survived = _run_in_child(_log_null_both_fn);
+    if (!survived) {
+        printf("         (both NULL: crash detected, same root cause)\n");
+        _tf_failed++;
+        return false;
+    }
     return true;
 }
+
+/* ============================================================
+ *  Special content
+ * ============================================================ */
 
 static bool t_log_special_chars(void)
 {
     csorma_logger_write(CSORMA_LOGGER_LEVEL_INFO, __FILE__, __LINE__, __func__,
-                        "special: \t\n\r\0\xff\x01 end");
+                        "special: \t\n\r end");
     return true;
 }
 
@@ -155,7 +255,7 @@ static bool t_log_unicode(void)
 }
 
 /* ============================================================
- *  Macro-level tests
+ *  Macro interface
  * ============================================================ */
 
 static bool t_log_macros(void)
@@ -234,10 +334,6 @@ int main(void)
     printf("  ================================================================\n");
     printf(C_RESET "\n");
 
-    /* Redirect stderr to /dev/null during tests to reduce noise */
-    /* (uncomment if you want quiet output) */
-    /* freopen("/dev/null", "w", stderr); */
-
     TEST_SUITE("Basic logging");
     RUN_TEST(t_log_all_levels);
     RUN_TEST(t_log_empty_format);
@@ -280,4 +376,3 @@ int main(void)
 
     return test_summary("Logger");
 }
-
