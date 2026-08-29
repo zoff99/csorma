@@ -18,7 +18,6 @@
  */
 
 #define _GNU_SOURCE
-#define _POSIX_C_SOURCE 200809L
 
 #include "test_framework.h"
 #include "csorma.h"
@@ -29,6 +28,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <signal.h>
 
 #define BUSY_DB_DIR  "/tmp/"
 #define BUSY_DB_NAME "_csorma_busy_test.db"
