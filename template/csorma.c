@@ -555,6 +555,11 @@ OrmaDatabase* OrmaDatabase_init(const uint8_t *directory_name, const uint32_t di
     }
     CSORMA_LOGGER_DEBUG("__sorma_global_last_inserted_rowid___mutex created");
 
+    // FIX: set a busy timeout so concurrent access retries instead of
+    // failing immediately with SQLITE_BUSY. Without this, any concurrent
+    // read/write on the same database file fails instantly.
+    sqlite3_busy_timeout(db, 3000); /* wait up to 3 seconds on lock */
+
     CSORMA_LOGGER_DEBUG("database created");
     o->db = db;
     CSORMA_LOGGER_DEBUG("o->db: %p db: %p", o->db, db);
