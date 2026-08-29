@@ -7,6 +7,8 @@
 # When the template code changes, simply re-run 'make test_all' and all
 # tests automatically exercise the updated code.
 #
+# Build errors stop immediately. Test failures do NOT stop other tests.
+#
 # Usage:
 #   make test_all       - build and run all tests
 #   make test_str       - string utility tests
@@ -50,10 +52,23 @@ CSORMA_H   := $(TEMPLATE_DIR)/csorma.h
 LOGGER_C   := $(TEMPLATE_DIR)/logger.c
 LOGGER_H   := $(TEMPLATE_DIR)/logger.h
 
+# All test binaries
+ALL_BINS := $(BIN_DIR)/test_str_utils \
+            $(BIN_DIR)/test_bindvars \
+            $(BIN_DIR)/test_db_ops \
+            $(BIN_DIR)/test_schema \
+            $(BIN_DIR)/test_resultset \
+            $(BIN_DIR)/test_threading \
+            $(BIN_DIR)/test_sql_clauses \
+            $(BIN_DIR)/test_column_lookup \
+            $(BIN_DIR)/test_logger \
+            $(BIN_DIR)/test_busy \
+            $(BIN_DIR)/test_leaks
+
 # Phony targets: these are always considered out-of-date
 .PHONY: all test_all test_str test_bind test_db test_schema test_resultset \
         test_thread test_clauses test_column test_logger test_busy test_leaks \
-        asan_all tsan_all ubsan_all clean objs
+        asan_all tsan_all ubsan_all clean objs build_all
 
 # Default target
 all: test_all
@@ -192,6 +207,18 @@ $(BIN_DIR)/test_leaks: test_leaks.c objs | $(BIN_DIR)
 	@echo "  -> $@"
 
 # ============================================================
+#  Build ALL binaries
+#
+#  This target builds every test binary. If ANY compilation
+#  fails, make stops immediately with an error. This is used
+#  as a prerequisite of test_all so build errors are never
+#  silently swallowed.
+# ============================================================
+build_all: $(ALL_BINS)
+	@echo ""
+	@echo "=== All 11 test binaries built successfully ==="
+
+# ============================================================
 #  Run targets
 #
 #  Each target builds the binary (if needed) then executes it.
@@ -278,27 +305,31 @@ test_leaks: $(BIN_DIR)/test_leaks
 # ============================================================
 #  Run ALL tests
 #
-#  Uses '|| FAILURES=...' pattern so that ALL suites run even
-#  if earlier ones fail. Without this, make would stop at the
-#  first non-zero exit code.
+#  PHASE 1 (build_all): Builds every test binary. If ANY
+#  compilation or link error occurs, make STOPS immediately.
+#  Build errors are never swallowed.
+#
+#  PHASE 2 (run): Runs every test binary. Test FAILURES
+#  (exit code 1) do NOT stop other tests — all suites run
+#  and a summary is printed at the end.
 # ============================================================
-test_all:
+test_all: build_all
 	@echo ""
 	@echo "============================================================"
 	@echo "  RUNNING ALL TEST SUITES"
 	@echo "============================================================"
 	@FAILURES=0; \
-	$(MAKE) test_str         || FAILURES=$$((FAILURES+1)); \
-	$(MAKE) test_bind        || FAILURES=$$((FAILURES+1)); \
-	$(MAKE) test_db          || FAILURES=$$((FAILURES+1)); \
-	$(MAKE) test_schema      || FAILURES=$$((FAILURES+1)); \
-	$(MAKE) test_resultset   || FAILURES=$$((FAILURES+1)); \
-	$(MAKE) test_thread      || FAILURES=$$((FAILURES+1)); \
-	$(MAKE) test_clauses     || FAILURES=$$((FAILURES+1)); \
-	$(MAKE) test_column      || FAILURES=$$((FAILURES+1)); \
-	$(MAKE) test_logger      || FAILURES=$$((FAILURES+1)); \
-	$(MAKE) test_busy        || FAILURES=$$((FAILURES+1)); \
-	$(MAKE) test_leaks       || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_str_utils     || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_bindvars      || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_db_ops        || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_schema        || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_resultset     || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_threading     || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_sql_clauses   || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_column_lookup || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_logger        || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_busy          || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_leaks         || FAILURES=$$((FAILURES+1)); \
 	echo ""; \
 	echo "============================================================"; \
 	if [ $$FAILURES -eq 0 ]; then \

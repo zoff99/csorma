@@ -17,11 +17,7 @@
  * cleaned up after each test.
  */
 
-/* FIX: enable POSIX functions (usleep, SIGALRM, signal, etc.)
- * Must be defined BEFORE any #include.
- * Without this, -std=c99 hides non-ISO-C symbols. */
-#define _DEFAULT_SOURCE
-#define _POSIX_C_SOURCE 200809L
+#define _GNU_SOURCE
 
 #include "test_framework.h"
 #include "csorma.h"
@@ -30,7 +26,9 @@
 #include <pthread.h>
 #include <stdatomic.h>
 #include <unistd.h>
+#include <signal.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 #define BUSY_DB_DIR  "/tmp/"
 #define BUSY_DB_NAME "_csorma_busy_test.db"
