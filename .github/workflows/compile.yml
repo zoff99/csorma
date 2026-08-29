@@ -403,6 +403,18 @@ jobs:
           cd project/gen/
           ./csorma_test
 
+  test_linux_unittests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: run unit tests
+        run: |
+          cd unit_test/
+          make test_all
+      - name: run unit asan tests
+        run: |
+          cd unit_test/
+          make asan_all
   test_macos:
     runs-on: macos-15-intel
     steps:
@@ -503,6 +515,15 @@ jobs:
         run: |
           cd project/gen/
           ./csorma_test && ./csorma_example
+
+  test_macos14arm_unittests:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v7
+      - name: run unit tests
+        run: |
+          cd unit_test/
+          make test_all
 
   test_wine:
     runs-on: ubuntu-22.04
