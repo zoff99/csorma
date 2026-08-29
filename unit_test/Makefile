@@ -10,22 +10,27 @@
 # Build errors stop immediately. Test failures do NOT stop other tests.
 #
 # Usage:
-#   make test_all       - build and run all tests
-#   make test_str       - string utility tests
-#   make test_bind      - bindvar tests
-#   make test_db        - database operation tests
-#   make test_schema    - schema upgrade tests
-#   make test_resultset - result set tests
-#   make test_thread    - threading / concurrency tests
-#   make test_clauses   - SQL clause building tests
-#   make test_column    - column lookup tests (rs_find_column_idx)
-#   make test_logger    - logger edge case tests
-#   make test_busy      - SQLITE_BUSY handling tests
-#   make test_leaks     - memory leak lifecycle tests
-#   make asan_all       - all tests with AddressSanitizer
-#   make tsan_all       - all tests with ThreadSanitizer
-#   make ubsan_all      - all tests with UBSanitizer
-#   make clean          - remove generated files
+#   make test_all        - build and run all tests
+#   make test_str        - string utility tests
+#   make test_bind       - bindvar tests
+#   make test_db         - database operation tests
+#   make test_schema     - schema upgrade tests
+#   make test_resultset  - result set tests
+#   make test_thread     - threading / concurrency tests
+#   make test_clauses    - SQL clause building tests
+#   make test_column     - column lookup tests (rs_find_column_idx)
+#   make test_logger     - logger edge case tests
+#   make test_busy       - SQLITE_BUSY handling tests
+#   make test_leaks      - memory leak lifecycle tests
+#   make test_bind_stmt  - bindvar_to_stmt / bind_all_* tests
+#   make test_error      - error recovery tests
+#   make test_lifetime   - SQLITE_STATIC binding lifetime tests
+#   make test_coercion   - type coercion in result reading tests
+#   make test_path       - str_buf_concat path building tests
+#   make asan_all        - all tests with AddressSanitizer
+#   make tsan_all        - all tests with ThreadSanitizer
+#   make ubsan_all       - all tests with UBSanitizer
+#   make clean           - remove generated files
 #
 
 SHELL        := /bin/bash
@@ -63,11 +68,17 @@ ALL_BINS := $(BIN_DIR)/test_str_utils \
             $(BIN_DIR)/test_column_lookup \
             $(BIN_DIR)/test_logger \
             $(BIN_DIR)/test_busy \
-            $(BIN_DIR)/test_leaks
+            $(BIN_DIR)/test_leaks \
+            $(BIN_DIR)/test_bind_stmt \
+            $(BIN_DIR)/test_error_recovery \
+            $(BIN_DIR)/test_bind_lifetime \
+            $(BIN_DIR)/test_type_coercion \
+            $(BIN_DIR)/test_path_build
 
 # Phony targets: these are always considered out-of-date
 .PHONY: all test_all test_str test_bind test_db test_schema test_resultset \
         test_thread test_clauses test_column test_logger test_busy test_leaks \
+        test_bind_stmt test_error test_lifetime test_coercion test_path \
         asan_all tsan_all ubsan_all clean objs build_all
 
 # Default target
@@ -206,6 +217,46 @@ $(BIN_DIR)/test_leaks: test_leaks.c objs | $(BIN_DIR)
 		-o $@ -lm -pthread
 	@echo "  -> $@"
 
+# --- Bind-to-stmt tests (sqlite3_bind_* verification) ---
+$(BIN_DIR)/test_bind_stmt: test_bind_stmt.c objs | $(BIN_DIR)
+	@echo "=== Building test_bind_stmt ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ -lm -pthread
+	@echo "  -> $@"
+
+# --- Error recovery tests ---
+$(BIN_DIR)/test_error_recovery: test_error_recovery.c objs | $(BIN_DIR)
+	@echo "=== Building test_error_recovery ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ -lm -pthread
+	@echo "  -> $@"
+
+# --- SQLITE_STATIC binding lifetime tests ---
+$(BIN_DIR)/test_bind_lifetime: test_bind_lifetime.c objs | $(BIN_DIR)
+	@echo "=== Building test_bind_lifetime ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ -lm -pthread
+	@echo "  -> $@"
+
+# --- Type coercion tests ---
+$(BIN_DIR)/test_type_coercion: test_type_coercion.c objs | $(BIN_DIR)
+	@echo "=== Building test_type_coercion ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ -lm -pthread
+	@echo "  -> $@"
+
+# --- Path building tests (str_buf_concat) ---
+$(BIN_DIR)/test_path_build: test_path_build.c objs | $(BIN_DIR)
+	@echo "=== Building test_path_build ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ -lm -pthread
+	@echo "  -> $@"
+
 # ============================================================
 #  Build ALL binaries
 #
@@ -216,7 +267,7 @@ $(BIN_DIR)/test_leaks: test_leaks.c objs | $(BIN_DIR)
 # ============================================================
 build_all: $(ALL_BINS)
 	@echo ""
-	@echo "=== All 11 test binaries built successfully ==="
+	@echo "=== All 16 test binaries built successfully ==="
 
 # ============================================================
 #  Run targets
@@ -302,6 +353,41 @@ test_leaks: $(BIN_DIR)/test_leaks
 	@echo "============================================================"
 	./$(BIN_DIR)/test_leaks
 
+test_bind_stmt: $(BIN_DIR)/test_bind_stmt
+	@echo ""
+	@echo "============================================================"
+	@echo "  Running: Bind-to-Stmt Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_bind_stmt
+
+test_error: $(BIN_DIR)/test_error_recovery
+	@echo ""
+	@echo "============================================================"
+	@echo "  Running: Error Recovery Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_error_recovery
+
+test_lifetime: $(BIN_DIR)/test_bind_lifetime
+	@echo ""
+	@echo "============================================================"
+	@echo "  Running: SQLITE_STATIC Binding Lifetime Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_bind_lifetime
+
+test_coercion: $(BIN_DIR)/test_type_coercion
+	@echo ""
+	@echo "============================================================"
+	@echo "  Running: Type Coercion Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_type_coercion
+
+test_path: $(BIN_DIR)/test_path_build
+	@echo ""
+	@echo "============================================================"
+	@echo "  Running: Path Building Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_path_build
+
 # ============================================================
 #  Run ALL tests
 #
@@ -319,21 +405,26 @@ test_all: build_all
 	@echo "  RUNNING ALL TEST SUITES"
 	@echo "============================================================"
 	@FAILURES=0; \
-	./$(BIN_DIR)/test_str_utils     || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_bindvars      || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_db_ops        || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_schema        || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_resultset     || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_threading     || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_sql_clauses   || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_column_lookup || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_logger        || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_busy          || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_leaks         || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_str_utils      || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_bindvars       || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_db_ops         || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_schema         || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_resultset      || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_threading      || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_sql_clauses    || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_column_lookup  || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_logger         || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_busy           || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_leaks          || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_bind_stmt      || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_error_recovery || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_bind_lifetime  || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_type_coercion  || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_path_build     || FAILURES=$$((FAILURES+1)); \
 	echo ""; \
 	echo "============================================================"; \
 	if [ $$FAILURES -eq 0 ]; then \
-		echo "  ALL 11 TEST SUITES PASSED"; \
+		echo "  ALL 16 TEST SUITES PASSED"; \
 	else \
 		echo "  $$FAILURES TEST SUITE(S) FAILED"; \
 	fi; \
