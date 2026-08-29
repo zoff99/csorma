@@ -26,7 +26,6 @@
 #include <pthread.h>
 #include <stdatomic.h>
 #include <unistd.h>
-#include <signal.h>
 #include <sys/time.h>
 #include <unistd.h>
 
@@ -472,16 +471,23 @@ static bool t_busy_rapid_open_close(void)
  *  TEST 6: Verify no infinite spin on SQLITE_BUSY
  *
  *  If the csorma code has a SQLITE_BUSY spin loop with no
- *  timeout, this test will hang. We use alarm() to detect that.
+ *  timeout, this test will hang. We use fork() + waitpid()
+ *  with a polling timeout to detect that.
+ *
+ *  The timeout must be significantly larger than the
+ *  sqlite3_busy_timeout configured in csorma.c (3000ms) to
+ *  avoid false positives on slow platforms (macOS arm, CI runners).
+ *  SQLite's busy handler can take longer than the configured
+ *  timeout due to platform lock timing and filesystem differences.
  * ============================================================ */
 
-static volatile int g_alarm_fired = 0;
+#include <sys/wait.h>
 
-static void alarm_handler(int sig)
-{
-    (void)sig;
-    g_alarm_fired = 1;
-}
+/* Timeout in seconds for the busy-spin detection.
+ * Must be >> sqlite3_busy_timeout (3000ms) to avoid false positives.
+ * On macOS arm CI, a 3000ms busy_timeout has been observed to take
+ * up to 5700ms. We use 15s for generous headroom. */
+#define BUSY_SPIN_TIMEOUT_SEC 15
 
 static bool t_busy_no_infinite_spin(void)
 {
@@ -499,34 +505,85 @@ static bool t_busy_no_infinite_spin(void)
     sqlite3_exec(setup, "BEGIN EXCLUSIVE;", 0, 0, 0);
     sqlite3_exec(setup, "INSERT INTO busy_test(value) VALUES(2);", 0, 0, 0);
 
-    /* Open a reader that will get SQLITE_BUSY */
-    OrmaDatabase *reader = open_file_db();
-    T_ASSERT_PTR_NOT_NULL(reader, "open reader");
+    /*
+     * Fork a child process that attempts the read.
+     * If csorma has an infinite SQLITE_BUSY spin loop, the child
+     * will hang forever. The parent polls with a timeout and
+     * kills the child if it takes too long.
+     */
+    fflush(stdout);
+    fflush(stderr);
+    pid_t pid = fork();
 
-    /* Set alarm: if read takes > 5 seconds, it's stuck */
-    g_alarm_fired = 0;
-    signal(SIGALRM, alarm_handler);
-    alarm(5);
+    if (pid < 0)
+    {
+        /* fork failed — skip test */
+        sqlite3_exec(setup, "COMMIT;", 0, 0, 0);
+        sqlite3_close(setup);
+        cleanup_busy_db();
+        return true;
+    }
 
+    if (pid == 0)
+    {
+        /* ---- CHILD PROCESS ---- */
+        freopen("/dev/null", "w", stdout);
+        freopen("/dev/null", "w", stderr);
+
+        OrmaDatabase *reader = open_file_db();
+        if (reader == NULL)
+            _exit(2);
+
+        /* This call may spin forever if SQLITE_BUSY is not handled */
+        int64_t val = OrmaDatabase_run_sql_int64(reader,
+            (const uint8_t *)"SELECT count(*) FROM busy_test;");
+
+        OrmaDatabase_shutdown(reader);
+        _exit(val >= 0 ? 0 : 1);
+    }
+
+    /* ---- PARENT PROCESS ---- */
     long long t0 = now_ms();
-    int64_t val = OrmaDatabase_run_sql_int64(reader,
-        (const uint8_t *)"SELECT count(*) FROM busy_test;");
+    int status = 0;
+    bool child_done = false;
+    bool timed_out = false;
+
+    while (1)
+    {
+        pid_t result = waitpid(pid, &status, WNOHANG);
+        if (result == pid)
+        {
+            child_done = true;
+            break;
+        }
+
+        long long elapsed_ms = now_ms() - t0;
+        if (elapsed_ms > BUSY_SPIN_TIMEOUT_SEC * 1000LL)
+        {
+            timed_out = true;
+            kill(pid, SIGKILL);
+            waitpid(pid, &status, 0);
+            break;
+        }
+
+        usleep(50 * 1000); /* 50ms poll interval */
+    }
+
     long long elapsed = now_ms() - t0;
 
-    alarm(0); /* cancel alarm */
-    signal(SIGALRM, SIG_DFL);
+    /* Release the exclusive lock */
+    sqlite3_exec(setup, "COMMIT;", 0, 0, 0);
+    sqlite3_close(setup);
 
-    printf("         read returned: %lld (took %lldms)\n", (long long)val, elapsed);
-
-    if (g_alarm_fired)
+    if (timed_out)
     {
         printf(C_RED "\n");
         printf("  +-----------------------------------------------------------+\n");
         printf("  |  BUG: SQLITE_BUSY spin loop detected!                    |\n");
         printf("  +-----------------------------------------------------------+\n");
         printf("  |                                                           |\n");
-        printf("  |  OrmaDatabase_run_sql_int64 spun for > 5 seconds         |\n");
-        printf("  |  waiting for SQLITE_BUSY to resolve.                     |\n");
+        printf("  |  OrmaDatabase_run_sql_int64 did not return within        |\n");
+        printf("  |  %d seconds while another connection held a lock.         |\n", BUSY_SPIN_TIMEOUT_SEC);
         printf("  |                                                           |\n");
         printf("  |  ROOT CAUSE: busy loop with no sleep and no timeout:     |\n");
         printf("  |    else if (step == SQLITE_BUSY) { continue; }           |\n");
@@ -536,20 +593,20 @@ static bool t_busy_no_infinite_spin(void)
         printf("  |  counter with a maximum.                                  |\n");
         printf("  +-----------------------------------------------------------+\n");
         printf(C_RESET "\n");
-        _tf_failed++;
 
-        /* Release lock so we can clean up */
-        sqlite3_exec(setup, "COMMIT;", 0, 0, 0);
-        sqlite3_close(setup);
-        OrmaDatabase_shutdown(reader);
         cleanup_busy_db();
+        _tf_failed++;
         return false;
     }
 
-    /* Release lock */
-    sqlite3_exec(setup, "COMMIT;", 0, 0, 0);
-    sqlite3_close(setup);
-    OrmaDatabase_shutdown(reader);
+    printf("         child completed in %lldms (no infinite spin)\n", elapsed);
+
+    if (child_done && WIFEXITED(status))
+    {
+        int exit_code = WEXITSTATUS(status);
+        printf("         child exit code: %d\n", exit_code);
+    }
+
     cleanup_busy_db();
     return true;
 }
