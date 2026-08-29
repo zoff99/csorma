@@ -10,27 +10,29 @@
 # Build errors stop immediately. Test failures do NOT stop other tests.
 #
 # Usage:
-#   make test_all        - build and run all tests
-#   make test_str        - string utility tests
-#   make test_bind       - bindvar tests
-#   make test_db         - database operation tests
-#   make test_schema     - schema upgrade tests
-#   make test_resultset  - result set tests
-#   make test_thread     - threading / concurrency tests
-#   make test_clauses    - SQL clause building tests
-#   make test_column     - column lookup tests (rs_find_column_idx)
-#   make test_logger     - logger edge case tests
-#   make test_busy       - SQLITE_BUSY handling tests
-#   make test_leaks      - memory leak lifecycle tests
-#   make test_bind_stmt  - bindvar_to_stmt / bind_all_* tests
-#   make test_error      - error recovery tests
-#   make test_lifetime   - SQLITE_STATIC binding lifetime tests
-#   make test_coercion   - type coercion in result reading tests
-#   make test_path       - str_buf_concat path building tests
-#   make asan_all        - all tests with AddressSanitizer
-#   make tsan_all        - all tests with ThreadSanitizer
-#   make ubsan_all       - all tests with UBSanitizer
-#   make clean           - remove generated files
+#   make test_all          - build and run all tests
+#   make test_str          - string utility tests
+#   make test_bind         - bindvar tests
+#   make test_db           - database operation tests
+#   make test_schema       - schema upgrade tests
+#   make test_resultset    - result set tests
+#   make test_thread       - threading / concurrency tests
+#   make test_clauses      - SQL clause building tests
+#   make test_column       - column lookup tests (rs_find_column_idx)
+#   make test_logger       - logger edge case tests
+#   make test_busy         - SQLITE_BUSY handling tests
+#   make test_leaks        - memory leak lifecycle tests
+#   make test_bind_stmt    - bindvar_to_stmt / bind_all_* tests
+#   make test_error        - error recovery tests
+#   make test_lifetime     - SQLITE_STATIC binding lifetime tests
+#   make test_coercion     - type coercion in result reading tests
+#   make test_path         - str_buf_concat path building tests
+#   make test_str_con_null - csorma_str_con NULL b1 tests
+#   make test_unicode      - unicode & special character tests
+#   make asan_all          - all tests with AddressSanitizer
+#   make tsan_all          - all tests with ThreadSanitizer
+#   make ubsan_all         - all tests with UBSanitizer
+#   make clean             - remove generated files
 #
 
 SHELL        := /bin/bash
@@ -73,12 +75,15 @@ ALL_BINS := $(BIN_DIR)/test_str_utils \
             $(BIN_DIR)/test_error_recovery \
             $(BIN_DIR)/test_bind_lifetime \
             $(BIN_DIR)/test_type_coercion \
-            $(BIN_DIR)/test_path_build
+            $(BIN_DIR)/test_path_build \
+            $(BIN_DIR)/test_str_con_null \
+            $(BIN_DIR)/test_unicode
 
 # Phony targets: these are always considered out-of-date
 .PHONY: all test_all test_str test_bind test_db test_schema test_resultset \
         test_thread test_clauses test_column test_logger test_busy test_leaks \
         test_bind_stmt test_error test_lifetime test_coercion test_path \
+        test_str_con_null test_unicode \
         asan_all tsan_all ubsan_all clean objs build_all
 
 # Default target
@@ -249,9 +254,25 @@ $(BIN_DIR)/test_type_coercion: test_type_coercion.c objs | $(BIN_DIR)
 		-o $@ -lm -pthread
 	@echo "  -> $@"
 
-# --- Path building tests (str_buf_concat) ---
+# --- Path building tests (str_buf_concat via OrmaDatabase_init) ---
 $(BIN_DIR)/test_path_build: test_path_build.c objs | $(BIN_DIR)
 	@echo "=== Building test_path_build ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ -lm -pthread
+	@echo "  -> $@"
+
+# --- csorma_str_con NULL b1 tests ---
+$(BIN_DIR)/test_str_con_null: test_str_con_null.c objs | $(BIN_DIR)
+	@echo "=== Building test_str_con_null ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ -lm -pthread
+	@echo "  -> $@"
+
+# --- Unicode and special character tests ---
+$(BIN_DIR)/test_unicode: test_unicode.c objs | $(BIN_DIR)
+	@echo "=== Building test_unicode ==="
 	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
 		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
 		-o $@ -lm -pthread
@@ -267,7 +288,7 @@ $(BIN_DIR)/test_path_build: test_path_build.c objs | $(BIN_DIR)
 # ============================================================
 build_all: $(ALL_BINS)
 	@echo ""
-	@echo "=== All 16 test binaries built successfully ==="
+	@echo "=== All 18 test binaries built successfully ==="
 
 # ============================================================
 #  Run targets
@@ -388,6 +409,20 @@ test_path: $(BIN_DIR)/test_path_build
 	@echo "============================================================"
 	./$(BIN_DIR)/test_path_build
 
+test_str_con_null: $(BIN_DIR)/test_str_con_null
+	@echo ""
+	@echo "============================================================"
+	@echo "  Running: csorma_str_con NULL b1 Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_str_con_null
+
+test_unicode: $(BIN_DIR)/test_unicode
+	@echo ""
+	@echo "============================================================"
+	@echo "  Running: Unicode & Special Character Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_unicode
+
 # ============================================================
 #  Run ALL tests
 #
@@ -421,10 +456,12 @@ test_all: build_all
 	./$(BIN_DIR)/test_bind_lifetime  || FAILURES=$$((FAILURES+1)); \
 	./$(BIN_DIR)/test_type_coercion  || FAILURES=$$((FAILURES+1)); \
 	./$(BIN_DIR)/test_path_build     || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_str_con_null   || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_unicode        || FAILURES=$$((FAILURES+1)); \
 	echo ""; \
 	echo "============================================================"; \
 	if [ $$FAILURES -eq 0 ]; then \
-		echo "  ALL 16 TEST SUITES PASSED"; \
+		echo "  ALL 18 TEST SUITES PASSED"; \
 	else \
 		echo "  $$FAILURES TEST SUITE(S) FAILED"; \
 	fi; \
@@ -464,4 +501,5 @@ clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
 	rm -f *.db *.db-journal *.db-wal *.db-shm
 	rm -f /tmp/_csorma_busy_test.db*
+	rm -f ':memory:ignored.db'
 	@echo "Cleaned."
