@@ -4,6 +4,9 @@
 # Builds unit tests directly against ../template/csorma.c (the real code).
 # No fragile extraction — tests always run against current source.
 #
+# When the template code changes, simply re-run 'make test_all' and all
+# tests automatically exercise the updated code.
+#
 # Usage:
 #   make test_all       - build and run all tests
 #   make test_str       - string utility tests
@@ -12,6 +15,9 @@
 #   make test_schema    - schema upgrade tests
 #   make test_resultset - result set tests
 #   make test_thread    - threading / concurrency tests
+#   make test_clauses   - SQL clause building tests
+#   make test_column    - column lookup tests (rs_find_column_idx)
+#   make test_logger    - logger edge case tests
 #   make asan_all       - all tests with AddressSanitizer
 #   make tsan_all       - all tests with ThreadSanitizer
 #   make ubsan_all      - all tests with UBSanitizer
@@ -27,21 +33,32 @@ BIN_DIR      := ./_bin
 CC     ?= gcc
 AR     ?= ar
 
+# Base compiler flags for all builds.
+# -I.. allows #include "sqlite/sqlite3.h" to resolve from the repo root.
+# -I$(TEMPLATE_DIR) allows #include "csorma.h" and #include "logger.h".
+# -I$(SQLITE_DIR) allows #include "sqlite3.h" directly.
 CFLAGS := -std=c99 -Wall -Wextra -Wno-unused-function -Wno-unused-parameter \
           -Wno-unused-variable -g -O0 -pthread \
           -I.. -I$(TEMPLATE_DIR) -I$(SQLITE_DIR) -I.
 
+# Source file paths
 SQLITE_C   := $(SQLITE_DIR)/sqlite3.c
 CSORMA_C   := $(TEMPLATE_DIR)/csorma.c
 CSORMA_H   := $(TEMPLATE_DIR)/csorma.h
 LOGGER_C   := $(TEMPLATE_DIR)/logger.c
 LOGGER_H   := $(TEMPLATE_DIR)/logger.h
 
-.PHONY: all test_all test_str test_bind test_db test_schema test_resultset test_thread \
+# Phony targets: these are always considered out-of-date
+.PHONY: all test_all test_str test_bind test_db test_schema test_resultset \
+        test_thread test_clauses test_column test_logger \
         asan_all tsan_all ubsan_all clean objs
 
+# Default target
 all: test_all
 
+# ============================================================
+#  Directory creation
+# ============================================================
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
@@ -50,9 +67,15 @@ $(BIN_DIR):
 
 # ============================================================
 #  Compile shared objects (done once, reused by all tests)
+#
+#  These are the REAL source files from ../template/ compiled
+#  into object files. Every test binary links against these.
+#  When the source changes, make recompiles automatically.
 # ============================================================
 objs: $(BUILD_DIR) $(BUILD_DIR)/sqlite3.o $(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o
 
+# SQLite3 amalgamation — compiled with permissive warnings since
+# it's third-party code we don't control.
 $(BUILD_DIR)/sqlite3.o: $(SQLITE_C) | $(BUILD_DIR)
 	@echo "=== Compiling SQLite3 ==="
 	$(CC) -c $(CFLAGS) $(CFLAGS_EXTRA) \
@@ -61,56 +84,102 @@ $(BUILD_DIR)/sqlite3.o: $(SQLITE_C) | $(BUILD_DIR)
 		-Wno-pointer-arith -Wno-sign-compare -Wno-double-promotion \
 		$(SQLITE_C) -o $@
 
+# The main csorma runtime — this is the code under test.
 $(BUILD_DIR)/csorma.o: $(CSORMA_C) $(CSORMA_H) | $(BUILD_DIR)
 	@echo "=== Compiling csorma.c ==="
 	$(CC) -c $(CFLAGS) $(CFLAGS_EXTRA) $(CSORMA_C) -o $@
 
+# Logger — needed by csorma.c for CSORMA_LOGGER_* macros.
 $(BUILD_DIR)/logger.o: $(LOGGER_C) $(LOGGER_H) | $(BUILD_DIR)
 	@echo "=== Compiling logger.c ==="
 	$(CC) -c $(CFLAGS) $(CFLAGS_EXTRA) $(LOGGER_C) -o $@
 
 # ============================================================
-#  Build test binaries (each links against real csorma.o)
+#  Build test binaries
+#
+#  Each test links against the real csorma.o + logger.o + sqlite3.o.
+#  CFLAGS_EXTRA is injected by sanitizer builds (asan_all, etc.)
 # ============================================================
+
+# --- String utility tests ---
 $(BIN_DIR)/test_str_utils: test_str_utils.c objs | $(BIN_DIR)
 	@echo "=== Building test_str_utils ==="
 	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
 		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
 		-o $@ -lm -pthread
+	@echo "  -> $@"
 
+# --- Bind variable tests ---
 $(BIN_DIR)/test_bindvars: test_bindvars.c objs | $(BIN_DIR)
 	@echo "=== Building test_bindvars ==="
 	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
 		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
 		-o $@ -lm -pthread
+	@echo "  -> $@"
 
+# --- Database operation tests ---
 $(BIN_DIR)/test_db_ops: test_db_ops.c objs | $(BIN_DIR)
 	@echo "=== Building test_db_ops ==="
 	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
 		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
 		-o $@ -lm -pthread
+	@echo "  -> $@"
 
+# --- Schema upgrade tests ---
 $(BIN_DIR)/test_schema: test_schema.c objs | $(BIN_DIR)
 	@echo "=== Building test_schema ==="
 	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
 		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
 		-o $@ -lm -pthread
+	@echo "  -> $@"
 
+# --- Result set tests ---
 $(BIN_DIR)/test_resultset: test_resultset.c objs | $(BIN_DIR)
 	@echo "=== Building test_resultset ==="
 	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
 		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
 		-o $@ -lm -pthread
+	@echo "  -> $@"
 
+# --- Threading / concurrency tests ---
 $(BIN_DIR)/test_threading: test_threading.c objs | $(BIN_DIR)
 	@echo "=== Building test_threading ==="
 	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
 		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
 		-o $@ -lm -pthread
+	@echo "  -> $@"
+
+# --- SQL clause building tests ---
+$(BIN_DIR)/test_sql_clauses: test_sql_clauses.c objs | $(BIN_DIR)
+	@echo "=== Building test_sql_clauses ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ -lm -pthread
+	@echo "  -> $@"
+
+# --- Column lookup tests (rs_find_column_idx) ---
+$(BIN_DIR)/test_column_lookup: test_column_lookup.c objs | $(BIN_DIR)
+	@echo "=== Building test_column_lookup ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ -lm -pthread
+	@echo "  -> $@"
+
+# --- Logger edge case tests ---
+$(BIN_DIR)/test_logger: test_logger.c objs | $(BIN_DIR)
+	@echo "=== Building test_logger ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/csorma.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ -lm -pthread
+	@echo "  -> $@"
 
 # ============================================================
 #  Run targets
+#
+#  Each target builds the binary (if needed) then executes it.
+#  The test binary returns 0 on success, 1 on failure.
 # ============================================================
+
 test_str: $(BIN_DIR)/test_str_utils
 	@echo ""
 	@echo "============================================================"
@@ -153,22 +222,53 @@ test_thread: $(BIN_DIR)/test_threading
 	@echo "============================================================"
 	./$(BIN_DIR)/test_threading
 
+test_clauses: $(BIN_DIR)/test_sql_clauses
+	@echo ""
+	@echo "============================================================"
+	@echo "  Running: SQL Clause Building Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_sql_clauses
+
+test_column: $(BIN_DIR)/test_column_lookup
+	@echo ""
+	@echo "============================================================"
+	@echo "  Running: Column Lookup Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_column_lookup
+
+test_logger: $(BIN_DIR)/test_logger
+	@echo ""
+	@echo "============================================================"
+	@echo "  Running: Logger Edge Case Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_logger
+
+# ============================================================
+#  Run ALL tests
+#
+#  Uses '|| FAILURES=...' pattern so that ALL suites run even
+#  if earlier ones fail. Without this, make would stop at the
+#  first non-zero exit code.
+# ============================================================
 test_all:
 	@echo ""
 	@echo "============================================================"
 	@echo "  RUNNING ALL TEST SUITES"
 	@echo "============================================================"
 	@FAILURES=0; \
-	$(MAKE) test_str       || FAILURES=$$((FAILURES+1)); \
-	$(MAKE) test_bind      || FAILURES=$$((FAILURES+1)); \
-	$(MAKE) test_db        || FAILURES=$$((FAILURES+1)); \
-	$(MAKE) test_schema    || FAILURES=$$((FAILURES+1)); \
-	$(MAKE) test_resultset || FAILURES=$$((FAILURES+1)); \
-	$(MAKE) test_thread    || FAILURES=$$((FAILURES+1)); \
+	$(MAKE) test_str         || FAILURES=$$((FAILURES+1)); \
+	$(MAKE) test_bind        || FAILURES=$$((FAILURES+1)); \
+	$(MAKE) test_db          || FAILURES=$$((FAILURES+1)); \
+	$(MAKE) test_schema      || FAILURES=$$((FAILURES+1)); \
+	$(MAKE) test_resultset   || FAILURES=$$((FAILURES+1)); \
+	$(MAKE) test_thread      || FAILURES=$$((FAILURES+1)); \
+	$(MAKE) test_clauses     || FAILURES=$$((FAILURES+1)); \
+	$(MAKE) test_column      || FAILURES=$$((FAILURES+1)); \
+	$(MAKE) test_logger      || FAILURES=$$((FAILURES+1)); \
 	echo ""; \
 	echo "============================================================"; \
 	if [ $$FAILURES -eq 0 ]; then \
-		echo "  ALL 6 TEST SUITES PASSED"; \
+		echo "  ALL 9 TEST SUITES PASSED"; \
 	else \
 		echo "  $$FAILURES TEST SUITE(S) FAILED"; \
 	fi; \
@@ -177,6 +277,14 @@ test_all:
 
 # ============================================================
 #  Sanitized builds
+#
+#  These clean first, then rebuild everything with sanitizer
+#  flags injected via CFLAGS_EXTRA. This ensures all .o files
+#  and test binaries are compiled with instrumentation.
+#
+#  ASAN:  catches heap-buffer-overflow, use-after-free, leaks
+#  TSAN:  catches data races (critical for threading tests)
+#  UBSAN: catches signed overflow, null deref, misalignment
 # ============================================================
 asan_all: clean
 	@echo "=== ASAN BUILD ==="
@@ -192,6 +300,9 @@ ubsan_all: clean
 
 # ============================================================
 #  Clean
+#
+#  Removes all generated files: object files, test binaries,
+#  and any leftover database files from test runs.
 # ============================================================
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
