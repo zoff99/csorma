@@ -789,9 +789,16 @@ const char *csorma_get_sqlcipher_version(void)
 #endif
 }
 
-
 static int rs_find_column_idx(sqlite3_stmt *res, const char *column_name)
 {
+    // FIX: guard against NULL column_name.
+    // strlen(NULL) is undefined behavior and would crash.
+    if (column_name == NULL)
+    {
+        CSORMA_LOGGER_DEBUG("column_name is NULL");
+        return -1;
+    }
+
     int result_colum_count = sqlite3_column_count(res);
     CSORMA_LOGGER_DEBUG("result_colum_count=%d", result_colum_count);
     for (int i=0;i<result_colum_count;i++)
@@ -800,7 +807,15 @@ static int rs_find_column_idx(sqlite3_stmt *res, const char *column_name)
         col_name = sqlite3_column_name(res, i);
         if (col_name != NULL)
         {
-            if (strncmp(col_name, column_name, strlen(column_name)) == 0)
+            // FIX: use strcmp for EXACT match instead of strncmp with
+            // strlen(column_name). The original code:
+            //   strncmp(col_name, column_name, strlen(column_name)) == 0
+            // was a PREFIX match, meaning searching for "id" would
+            // incorrectly match a column named "id_extra" because
+            // "id" is a prefix of "id_extra".
+            // strcmp compares the full length of both strings, so
+            // "id" will only match "id", not "id_extra".
+            if (strcmp(col_name, column_name) == 0)
             {
                 CSORMA_LOGGER_DEBUG("column found #%d %s", i, col_name);
                 return i;
