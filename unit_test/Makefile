@@ -433,40 +433,77 @@ test_unicode: $(BIN_DIR)/test_unicode
 #  PHASE 2 (run): Runs every test binary. Test FAILURES
 #  (exit code 1) do NOT stop other tests — all suites run
 #  and a summary is printed at the end.
+#
+#  PHASE 3 (aggregate): Parses the per-binary test_summary()
+#  output and prints a GRAND TOTAL of individual tests across
+#  all suites. Each binary already prints its own summary;
+#  this adds a combined total at the very end.
 # ============================================================
 test_all: build_all
 	@echo ""
 	@echo "============================================================"
 	@echo "  RUNNING ALL TEST SUITES"
 	@echo "============================================================"
-	@FAILURES=0; \
-	./$(BIN_DIR)/test_str_utils      || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_bindvars       || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_db_ops         || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_schema         || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_resultset      || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_threading      || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_sql_clauses    || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_column_lookup  || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_logger         || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_busy           || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_leaks          || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_bind_stmt      || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_error_recovery || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_bind_lifetime  || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_type_coercion  || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_path_build     || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_str_con_null   || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_unicode        || FAILURES=$$((FAILURES+1)); \
+	@OUTFILE=$$(mktemp); \
+	TOTAL_TESTS=0; \
+	TOTAL_PASSED=0; \
+	TOTAL_FAILED=0; \
+	SUITES_RUN=0; \
+	SUITES_FAILED=0; \
+	for BIN in \
+		$(BIN_DIR)/test_str_utils \
+		$(BIN_DIR)/test_bindvars \
+		$(BIN_DIR)/test_db_ops \
+		$(BIN_DIR)/test_schema \
+		$(BIN_DIR)/test_resultset \
+		$(BIN_DIR)/test_threading \
+		$(BIN_DIR)/test_sql_clauses \
+		$(BIN_DIR)/test_column_lookup \
+		$(BIN_DIR)/test_logger \
+		$(BIN_DIR)/test_busy \
+		$(BIN_DIR)/test_leaks \
+		$(BIN_DIR)/test_bind_stmt \
+		$(BIN_DIR)/test_error_recovery \
+		$(BIN_DIR)/test_bind_lifetime \
+		$(BIN_DIR)/test_type_coercion \
+		$(BIN_DIR)/test_path_build \
+		$(BIN_DIR)/test_str_con_null \
+		$(BIN_DIR)/test_unicode; \
+	do \
+		./$$BIN > $$OUTFILE 2>&1; \
+		RC=$$?; \
+		cat $$OUTFILE; \
+		SUITES_RUN=$$((SUITES_RUN+1)); \
+		if [ $$RC -ne 0 ]; then \
+			SUITES_FAILED=$$((SUITES_FAILED+1)); \
+		fi; \
+		CLEAN=$$(sed "s/$$'\033'\\[[0-9;]*[a-zA-Z]//g" $$OUTFILE); \
+		T=$$(echo "$$CLEAN" | grep 'Total:' | tail -n1 | awk '{print $$NF}'); \
+		P=$$(echo "$$CLEAN" | grep 'Passed:' | tail -n1 | awk '{print $$NF}'); \
+		F=$$(echo "$$CLEAN" | grep 'Failed:' | tail -n1 | awk '{print $$NF}'); \
+		T=$${T:-0}; P=$${P:-0}; F=$${F:-0}; \
+		TOTAL_TESTS=$$((TOTAL_TESTS + T)); \
+		TOTAL_PASSED=$$((TOTAL_PASSED + P)); \
+		TOTAL_FAILED=$$((TOTAL_FAILED + F)); \
+	done; \
+	rm -f $$OUTFILE; \
 	echo ""; \
 	echo "============================================================"; \
-	if [ $$FAILURES -eq 0 ]; then \
-		echo "  ALL 18 TEST SUITES PASSED"; \
+	echo "  GRAND TOTAL (all individual tests across all suites)"; \
+	echo "============================================================"; \
+	echo "    Total:   $$TOTAL_TESTS"; \
+	echo "    Passed:  $$TOTAL_PASSED"; \
+	echo "    Failed:  $$TOTAL_FAILED"; \
+	echo "    Suites:  $$SUITES_RUN run, $$SUITES_FAILED with failures"; \
+	echo "============================================================"; \
+	if [ $$TOTAL_FAILED -eq 0 ]; then \
+		echo "    >>> ALL $$TOTAL_TESTS TESTS PASSED <<<"; \
 	else \
-		echo "  $$FAILURES TEST SUITE(S) FAILED"; \
+		echo "    >>> $$TOTAL_FAILED TEST(S) FAILED <<<"; \
 	fi; \
 	echo "============================================================"; \
-	exit $$FAILURES
+	echo ""; \
+	exit $$TOTAL_FAILED
 
 # ============================================================
 #  Sanitized builds
