@@ -324,6 +324,8 @@ you can download the generated sqlcipher code from https://github.com/zoff99/gen
 ### Automated Screenshots taken from CI
 <img src="https://github.com/zoff99/csorma/releases/download/nightly/console_01_screen-0.png" width="300">
 <br>
+<img src="https://github.com/zoff99/csorma/releases/download/nightly/unit_test_01_screen.png" height="300">
+<br>
 
 <br>
 Any use of this project's code by GitHub Copilot, past or present, is done
